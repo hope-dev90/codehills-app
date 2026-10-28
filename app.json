@@ -1,17 +1,37 @@
 {
   "expo": {
-    "name": "codehills",
+    "name": "CodeHills",
     "slug": "codehills",
+    "scheme": "codehills",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "backgroundColor": "#F7F0E5",
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "backgroundColor": "#4A2E1C"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "CodeHills uses your photos so you can add an image to your business."
+        }
+      ]
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.example.codehills"
     },
     "android": {
+      "package": "com.example.codehills",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#4A2E1C",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
