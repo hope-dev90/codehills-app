@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,6 +16,34 @@ import { useRootNav } from '../hooks/useRootNav';
 import { useApp } from '../hooks/AppContext';
 import { useStories } from '../hooks/useResource';
 import type { RootStackParamList } from '../navigation/types';
+
+const CREAM = '#F7F0E5';
+
+/** Button that stays readable on the dark photo background (text is always light). */
+function OnDarkButton({
+  title,
+  onPress,
+  filled = false,
+}: {
+  title: string;
+  onPress: () => void;
+  filled?: boolean;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      style={({ pressed }) => [
+        styles.darkBtn,
+        filled ? styles.darkBtnFilled : styles.darkBtnOutline,
+        pressed && { opacity: 0.85 },
+      ]}
+    >
+      <Text style={[styles.darkBtnText, filled && { color: colors.darkBrown }]}>{title}</Text>
+    </Pressable>
+  );
+}
 
 /** Screen 10: story reward unlocked by a (demo) order. */
 export default function RewardScreen() {
@@ -55,9 +83,17 @@ export default function RewardScreen() {
   return (
     <View style={styles.root}>
       <SmartImage imageKey="heroOnboarding" style={StyleSheet.absoluteFill}>
-        <LinearGradient colors={['rgba(43,33,27,0.7)', 'rgba(43,33,27,0.95)']} style={StyleSheet.absoluteFill} />
+        {/* Multi-stop scrim: light enough to feel like a photo, dark enough for text everywhere. */}
+        <LinearGradient
+          colors={['rgba(43,33,27,0.78)', 'rgba(43,33,27,0.88)', 'rgba(43,33,27,0.96)', 'rgba(43,33,27,0.98)']}
+          locations={[0, 0.35, 0.7, 1]}
+          style={StyleSheet.absoluteFill}
+        />
       </SmartImage>
-      <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 36, paddingBottom: insets.bottom + 24 }]}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 36, paddingBottom: insets.bottom + 24 }]}
+      >
         <View style={styles.backRow}>
           <IconButton name="chevron-back" label="Go back" onPress={() => navigation.goBack()} />
         </View>
@@ -68,7 +104,7 @@ export default function RewardScreen() {
           <AppText variant="display" color={colors.white} style={styles.title}>
             You{'\u2019'}ve Been Rewarded!
           </AppText>
-          <AppText variant="body" color="rgba(255,255,255,0.88)" style={styles.sub}>
+          <AppText variant="body" color="rgba(255,255,255,0.95)" style={styles.sub}>
             {story ? 'Your demo order unlocked a new story.' : 'You have already unlocked every sample story.'}
           </AppText>
         </View>
@@ -80,7 +116,7 @@ export default function RewardScreen() {
               <AppText variant="heading" color={colors.white}>
                 {story.title}
               </AppText>
-              <AppText variant="small" color="rgba(255,255,255,0.85)" style={{ marginTop: 4 }}>
+              <AppText variant="small" color="rgba(255,255,255,0.9)" style={{ marginTop: 4 }}>
                 {story.summary}
               </AppText>
               <Button
@@ -95,9 +131,12 @@ export default function RewardScreen() {
         )}
 
         <View style={styles.progress}>
-          <AppText variant="small" color="rgba(255,255,255,0.88)">
-            Stories unlocked: {unlocked} of {total}
-          </AppText>
+          <View style={styles.progressRow}>
+            <Text style={styles.progressLabel}>Stories unlocked</Text>
+            <Text style={styles.progressValue}>
+              {unlocked} of {total}
+            </Text>
+          </View>
           <View style={styles.track}>
             <View style={[styles.fill, { width: `${Math.min(100, (unlocked / total) * 100)}%` }]} />
           </View>
@@ -108,17 +147,17 @@ export default function RewardScreen() {
           confirmed order.
         </DemoNotice>
 
-        <Button
-          title="View order summary"
-          variant="secondary"
-          onPress={() => navigation.navigate('OrderConfirmation', { orderId: order.id })}
-          style={styles.second}
-        />
-        <Button
-          title="Continue exploring"
-          variant="ghost"
-          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Main' }] })}
-        />
+        <View style={{ marginTop: 18 }}>
+          <OnDarkButton
+            title="View order summary"
+            onPress={() => navigation.navigate('OrderConfirmation', { orderId: order.id })}
+          />
+          <OnDarkButton
+            title="Continue exploring"
+            filled
+            onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Main' }] })}
+          />
+        </View>
       </ScrollView>
     </View>
   );
@@ -130,13 +169,44 @@ const styles = StyleSheet.create({
   backRow: { alignSelf: 'flex-start', marginBottom: 8 },
   center: { alignItems: 'center' },
   medal: { width: 72, height: 72, borderRadius: 36, backgroundColor: colors.ochre, alignItems: 'center', justifyContent: 'center' },
-  title: { marginTop: 18, textAlign: 'center' },
+  title: {
+    marginTop: 18,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.45)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
+  },
   sub: { marginTop: 6, textAlign: 'center' },
-  card: { marginTop: 26, borderRadius: radius.xl, overflow: 'hidden', borderWidth: 1.5, borderColor: colors.ochre, backgroundColor: 'rgba(43,33,27,0.6)' },
+  card: {
+    marginTop: 26,
+    borderRadius: radius.xl,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: colors.ochre,
+    backgroundColor: 'rgba(43,33,27,0.85)',
+  },
   cover: { height: 170 },
   cardBody: { padding: 16 },
+
   progress: { marginVertical: 22 },
-  track: { height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.2)', marginTop: 8, overflow: 'hidden' },
+  progressRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  progressLabel: { fontFamily: 'Manrope_500Medium', fontSize: 13, color: 'rgba(255,255,255,0.9)' },
+  progressValue: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: colors.ochre },
+  track: { height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.28)', marginTop: 8, overflow: 'hidden' },
   fill: { height: 8, borderRadius: 4, backgroundColor: colors.ochre },
-  second: { marginTop: 16, backgroundColor: 'rgba(247,240,229,0.12)', borderColor: colors.ochre },
+
+  darkBtn: {
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  darkBtnOutline: {
+    backgroundColor: 'rgba(247,240,229,0.14)',
+    borderWidth: 1.5,
+    borderColor: colors.ochre,
+  },
+  darkBtnFilled: { backgroundColor: CREAM },
+  darkBtnText: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: CREAM },
 });

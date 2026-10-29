@@ -7,6 +7,7 @@
  */
 export const images = {
   logo: require('../../assets/favicon.svg'),
+  loginBg: require('../../assets/images/login_bg.jpg'),
   heroLanding: require('../../assets/images/hero_landing.jpg'),
   slide2: require('../../assets/images/slide2.png'),
   slide3: require('../../assets/images/slide3.png'),
@@ -24,6 +25,9 @@ export const images = {
   festival: require('../../assets/images/festival.jpg'),
   coffeeHarvest: require('../../assets/images/coffee_harvest.jpg'),
   artisan: require('../../assets/images/artisan.jpg'),
+  tshirt: require('../../assets/images/t.png'),
+  bracelet: require('../../assets/images/b.png'),
+  pen: require('../../assets/images/p.png'),
 } as const;
 
 export type ImageKey = keyof typeof images;

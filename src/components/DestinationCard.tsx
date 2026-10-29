@@ -17,29 +17,33 @@ interface Props {
 
 export function DestinationCard({ destination, selected = false, saved, onToggleSaved, onPress }: Props) {
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`Open destination: ${destination.name}`}
-      style={[styles.card, selected && styles.selected]}
-    >
-      <SmartImage imageKey={destination.image} uri={destination.imageUrl} style={styles.image} />
-      <View style={styles.body}>
-        <AppText variant="subheading" numberOfLines={1}>
-          {destination.name}
-        </AppText>
-        <AppText variant="caption" color={colors.caramel} style={styles.cat}>
-          {destination.category}
-        </AppText>
-        <AppText variant="small" color={colors.muted} numberOfLines={2}>
-          {destination.summary}
-        </AppText>
-        {destination.isDemo && (
-          <View style={styles.badge}>
-            <DemoBadge />
-          </View>
-        )}
-      </View>
+    <View style={[styles.card, selected && styles.selected]}>
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={`Open destination: ${destination.name}`}
+        style={styles.press}
+      >
+        <SmartImage imageKey={destination.image} uri={destination.imageUrl} style={styles.image} />
+        <View style={styles.body}>
+          <AppText variant="subheading" numberOfLines={1}>
+            {destination.name}
+          </AppText>
+          <AppText variant="caption" color={colors.caramel} style={styles.cat}>
+            {destination.category}
+          </AppText>
+          <AppText variant="small" color={colors.muted} numberOfLines={2}>
+            {destination.summary}
+          </AppText>
+          {destination.isDemo && (
+            <View style={styles.badge}>
+              <DemoBadge />
+            </View>
+          )}
+        </View>
+      </Pressable>
+
+      {/* Sibling of the card button: a button must not be nested inside another button on web. */}
       <Pressable
         onPress={onToggleSaved}
         hitSlop={10}
@@ -49,7 +53,7 @@ export function DestinationCard({ destination, selected = false, saved, onToggle
       >
         <Ionicons name={saved ? 'heart' : 'heart-outline'} size={20} color={colors.caramel} />
       </Pressable>
-    </Pressable>
+    </View>
   );
 }
 
@@ -65,6 +69,7 @@ const styles = StyleSheet.create({
     ...shadow,
   },
   selected: { borderColor: colors.ochre },
+  press: { flex: 1, flexDirection: 'row' },
   image: { width: 104, minHeight: 112 },
   body: { flex: 1, padding: 12, paddingRight: 40 },
   cat: { marginBottom: 3, fontFamily: 'Manrope_700Bold' },

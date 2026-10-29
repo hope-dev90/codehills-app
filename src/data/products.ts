@@ -77,6 +77,49 @@ export const mockProducts: Product[] = [
     rewardStoryId: 'lake-kivu',
     isDemo: true,
   },
+  // Featured in the Shop tab; the ids match the tiles in src/screens/ShopScreen.tsx.
+  {
+    id: 'shop-tshirt',
+    name: 'Traditional T-Shirt',
+    priceRwf: 25000,
+    category: 'Handicrafts',
+    image: 'tshirt',
+    description: 'Comfort · Culture · Style. Printed with patterns inspired by Rwandan heritage.',
+    craftsmanship:
+      'Sample description: cut and printed in small runs. Verified workshop details will be added with the real catalogue.',
+    tags: ['Comfort', 'Culture', 'Style'],
+    artisan: { name: 'Sample Textile Workshop', location: 'Rwanda (demo)' },
+    rewardStoryId: 'imigongo-art',
+    isDemo: true,
+  },
+  {
+    id: 'shop-bracelet',
+    name: 'Handcrafted Bracelet',
+    priceRwf: 12000,
+    category: 'Handicrafts',
+    image: 'bracelet',
+    description: 'Natural materials · Unique Design. A one-off piece made by hand.',
+    craftsmanship:
+      'Sample description: beads and fibres are strung by hand, so every piece differs slightly. Verified artisan notes will follow.',
+    tags: ['Natural materials', 'Unique design'],
+    artisan: { name: 'Sample Beadwork Group', location: 'Rwanda (demo)' },
+    rewardStoryId: 'woven-baskets',
+    isDemo: true,
+  },
+  {
+    id: 'shop-pen',
+    name: 'Cultural Pen',
+    priceRwf: 8000,
+    category: 'Handicrafts',
+    image: 'pen',
+    description: 'Elegant · Durable · Inspired. A carved pen decorated with traditional motifs.',
+    craftsmanship:
+      'Sample description: carved and finished by hand from local wood. Verified workshop details will be added later.',
+    tags: ['Elegant', 'Durable', 'Inspired'],
+    artisan: { name: 'Sample Woodcraft Studio', location: 'Rwanda (demo)' },
+    rewardStoryId: 'imigongo-art',
+    isDemo: true,
+  },
 ];
 
 export const getProductById = (id: string): Product | undefined => mockProducts.find((p) => p.id === id);

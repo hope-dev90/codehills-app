@@ -19,43 +19,47 @@ interface Props {
 
 export function ProductCard({ product, favorite, onToggleFavorite, onAddToCart, onPress, width }: Props) {
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`Open product: ${product.name}`}
-      style={[styles.card, width ? { width, marginRight: 14 } : { flex: 1 }]}
-    >
-      <SmartImage imageKey={product.image} uri={product.imageUrl} style={styles.image}>
-        <Pressable
-          onPress={onToggleFavorite}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel={favorite ? 'Remove from favorites' : 'Add to favorites'}
-          style={styles.fav}
-        >
-          <Ionicons name={favorite ? 'heart' : 'heart-outline'} size={17} color={favorite ? colors.caramel : colors.chocolate} />
-        </Pressable>
-      </SmartImage>
-      <View style={styles.body}>
-        <View style={styles.text}>
-          <AppText variant="subheading" numberOfLines={1}>
-            {product.name}
-          </AppText>
-          <AppText variant="small" color={colors.caramel} style={styles.price}>
-            {formatRwf(product.priceRwf)}
-          </AppText>
+    <View style={[styles.card, width ? { width, marginRight: 14 } : { flex: 1 }]}>
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={`Open product: ${product.name}`}
+        style={styles.press}
+      >
+        <SmartImage imageKey={product.image} uri={product.imageUrl} style={styles.image} />
+        <View style={styles.body}>
+          <View style={styles.text}>
+            <AppText variant="subheading" numberOfLines={1}>
+              {product.name}
+            </AppText>
+            <AppText variant="small" color={colors.caramel} style={styles.price}>
+              {formatRwf(product.priceRwf)}
+            </AppText>
+          </View>
         </View>
-        <Pressable
-          onPress={onAddToCart}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel={`Add ${product.name} to cart`}
-          style={styles.add}
-        >
-          <Ionicons name="add" size={20} color={colors.cream} />
-        </Pressable>
-      </View>
-    </Pressable>
+      </Pressable>
+
+      {/* Siblings of the card button: a button must not be nested inside another button on web. */}
+      <Pressable
+        onPress={onToggleFavorite}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel={favorite ? 'Remove from favorites' : 'Add to favorites'}
+        style={styles.fav}
+      >
+        <Ionicons name={favorite ? 'heart' : 'heart-outline'} size={17} color={favorite ? colors.caramel : colors.chocolate} />
+      </Pressable>
+
+      <Pressable
+        onPress={onAddToCart}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel={`Add ${product.name} to cart`}
+        style={styles.add}
+      >
+        <Ionicons name="add" size={20} color={colors.cream} />
+      </Pressable>
+    </View>
   );
 }
 
@@ -67,6 +71,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     ...shadow,
   },
+  press: { flex: 1 },
   image: { height: 128 },
   fav: {
     position: 'absolute',
@@ -80,15 +85,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   body: { flexDirection: 'row', alignItems: 'center', padding: 12 },
-  text: { flex: 1 },
+  text: { flex: 1, paddingRight: 52 },
   price: { fontFamily: 'Manrope_700Bold', marginTop: 2 },
   add: {
+    position: 'absolute',
+    right: 12,
+    bottom: 12,
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: colors.chocolate,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 8,
   },
 });

@@ -11,7 +11,7 @@ type IconName = keyof typeof Ionicons.glyphMap;
 
 const TABS: Record<string, { label: string; icon: IconName; active: IconName }> = {
   Home: { label: 'Home', icon: 'home-outline', active: 'home' },
-  Shop: { label: 'Shop', icon: 'bag-handle-outline', active: 'bag-handle' },
+  Shop: { label: 'Shop', icon: 'cart-outline', active: 'cart' },
   Map: { label: 'Map', icon: 'location-outline', active: 'location' },
   Stories: { label: 'Stories', icon: 'book-outline', active: 'book' },
   Profile: { label: 'Profile', icon: 'person-outline', active: 'person' },
@@ -42,7 +42,7 @@ export function BottomTabBar({ state, navigation }: BottomTabBarProps) {
             style={styles.item}
           >
             <View>
-              <Ionicons name={focused ? tab.active : tab.icon} size={22} color={focused ? colors.chocolate : '#9C8B7A'} />
+              <Ionicons name={focused ? tab.active : tab.icon} size={24} color={focused ? colors.chocolate : '#7D6E60'} />
               {route.name === 'Shop' && cartCount > 0 ? (
                 <View style={styles.badge}>
                   <AppText variant="caption" color={colors.white} style={styles.badgeText}>
@@ -53,12 +53,11 @@ export function BottomTabBar({ state, navigation }: BottomTabBarProps) {
             </View>
             <AppText
               variant="caption"
-              color={focused ? colors.chocolate : '#9C8B7A'}
-              style={focused ? styles.activeLabel : undefined}
+              color={focused ? colors.chocolate : '#7D6E60'}
+              style={[styles.label, focused && styles.activeLabel]}
             >
               {tab.label}
             </AppText>
-            {focused && <View style={styles.dot} />}
           </Pressable>
         );
       })}
@@ -75,6 +74,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   item: { flex: 1, alignItems: 'center', gap: 2 },
+  label: { fontSize: 11, lineHeight: 14 },
   activeLabel: { fontFamily: 'Manrope_800ExtraBold' },
   dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.caramel },
   badge: {

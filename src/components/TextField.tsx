@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, TextInput, TextInputProps, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, TextInput, TextInputProps, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AppText } from './AppText';
 import { colors, fonts, radius } from '../theme';
@@ -28,8 +28,8 @@ export function TextField({ label, icon, error, password = false, multiline, ...
         style={[
           styles.field,
           multiline && styles.multiline,
-          focused && { borderColor: colors.caramel },
-          !!error && { borderColor: colors.danger },
+          focused && styles.fieldFocused,
+          !!error && styles.fieldError,
         ]}
       >
         {icon && <Ionicons name={icon} size={20} color={colors.caramel} style={styles.icon} />}
@@ -38,6 +38,8 @@ export function TextField({ label, icon, error, password = false, multiline, ...
           multiline={multiline}
           secureTextEntry={hidden}
           placeholderTextColor="#A39283"
+          selectionColor={colors.caramel}
+          underlineColorAndroid="transparent"
           onFocus={(e) => {
             setFocused(true);
             rest.onFocus?.(e);
@@ -46,7 +48,12 @@ export function TextField({ label, icon, error, password = false, multiline, ...
             setFocused(false);
             rest.onBlur?.(e);
           }}
-          style={[styles.input, multiline && { height: 96, textAlignVertical: 'top', paddingTop: 12 }]}
+          style={[
+            styles.input,
+            multiline && { height: 96, textAlignVertical: 'top', paddingTop: 12 },
+            // Removes the browser's black focus outline on web.
+            Platform.OS === 'web' ? ({ outlineStyle: 'none', outlineWidth: 0 } as any) : null,
+          ]}
         />
         {password && (
           <Pressable
@@ -74,13 +81,14 @@ const styles = StyleSheet.create({
   field: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.white,
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    backgroundColor: '#F4EADB',
+    borderWidth: 0,
     borderRadius: radius.md,
     paddingHorizontal: 14,
     minHeight: 54,
   },
+  fieldFocused: { backgroundColor: '#F0E2CD' },
+  fieldError: { backgroundColor: '#FBE9E4' },
   multiline: { alignItems: 'flex-start' },
   icon: { marginRight: 10 },
   input: {
@@ -89,6 +97,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.darkBrown,
     paddingVertical: 12,
+    borderWidth: 0,
   },
   error: { marginTop: 5, marginLeft: 4 },
 });

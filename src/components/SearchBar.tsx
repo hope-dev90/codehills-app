@@ -44,5 +44,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     minHeight: 48,
   },
-  input: { flex: 1, marginHorizontal: 10, fontFamily: fonts.regular, fontSize: 14, color: colors.darkBrown },
+  input: {
+    flex: 1,
+    marginHorizontal: 10,
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: colors.darkBrown,
+    borderWidth: 0,
+    outlineStyle: 'none' as any,
+  },
 });

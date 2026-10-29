@@ -21,59 +21,61 @@ interface Props {
 export function StoryCard({ story, bookmarked, onToggleBookmark, onPress, variant = 'large', locked }: Props) {
   const compact = variant === 'compact';
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`Open story: ${story.title}`}
-      style={[styles.card, compact ? styles.compact : styles.large]}
-    >
-      <SmartImage imageKey={story.image} uri={story.imageUrl} style={StyleSheet.absoluteFill}>
-        <LinearGradient
-          colors={['rgba(43,33,27,0)', 'rgba(43,33,27,0.88)']}
-          locations={[0.25, 1]}
-          style={StyleSheet.absoluteFill}
-        />
-      </SmartImage>
-
-      <View style={styles.top}>
-        {story.isDemo ? <DemoBadge /> : <View />}
-        <Pressable
-          onPress={onToggleBookmark}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel={bookmarked ? 'Remove bookmark' : 'Bookmark story'}
-          style={styles.bookmark}
-        >
-          <Ionicons
-            name={bookmarked ? 'bookmark' : 'bookmark-outline'}
-            size={18}
-            color={bookmarked ? colors.ochre : colors.cream}
+    <View style={compact ? styles.compact : styles.large}>
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={`Open story: ${story.title}`}
+        style={styles.card}
+      >
+        <SmartImage imageKey={story.image} uri={story.imageUrl} style={StyleSheet.absoluteFill}>
+          <LinearGradient
+            colors={['rgba(43,33,27,0)', 'rgba(43,33,27,0.88)']}
+            locations={[0.25, 1]}
+            style={StyleSheet.absoluteFill}
           />
-        </Pressable>
-      </View>
+        </SmartImage>
 
-      <View style={styles.bottom}>
-        <AppText variant={compact ? 'subheading' : 'heading'} color={colors.white} numberOfLines={2}>
-          {story.title}
-        </AppText>
-        {!compact && (
-          <AppText variant="small" color="rgba(255,255,255,0.88)" numberOfLines={2} style={styles.summary}>
-            {story.summary}
+        <View style={styles.top}>{story.isDemo ? <DemoBadge /> : <View />}</View>
+
+        <View style={styles.bottom}>
+          <AppText variant={compact ? 'subheading' : 'heading'} color={colors.white} numberOfLines={2}>
+            {story.title}
           </AppText>
-        )}
-        <View style={styles.readPill}>
-          <AppText variant="caption" color={colors.cream} style={styles.readText}>
-            {locked ? 'Locked' : 'Read'}
-          </AppText>
-          <Ionicons name={locked ? 'lock-closed' : 'arrow-forward'} size={12} color={colors.cream} />
+          {!compact && (
+            <AppText variant="small" color="rgba(255,255,255,0.88)" numberOfLines={2} style={styles.summary}>
+              {story.summary}
+            </AppText>
+          )}
+          <View style={styles.readPill}>
+            <AppText variant="caption" color={colors.cream} style={styles.readText}>
+              {locked ? 'Locked' : 'Read'}
+            </AppText>
+            <Ionicons name={locked ? 'lock-closed' : 'arrow-forward'} size={12} color={colors.cream} />
+          </View>
         </View>
-      </View>
-    </Pressable>
+      </Pressable>
+
+      {/* Sibling of the card button: a button must not be nested inside another button on web. */}
+      <Pressable
+        onPress={onToggleBookmark}
+        hitSlop={10}
+        accessibilityRole="button"
+        accessibilityLabel={bookmarked ? 'Remove bookmark' : 'Bookmark story'}
+        style={styles.bookmark}
+      >
+        <Ionicons
+          name={bookmarked ? 'bookmark' : 'bookmark-outline'}
+          size={18}
+          color={bookmarked ? colors.ochre : colors.cream}
+        />
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.lg, overflow: 'hidden', backgroundColor: colors.sandstone, ...shadow },
+  card: { flex: 1, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: colors.sandstone, ...shadow },
   large: { height: 230, marginBottom: 16 },
   compact: { width: 168, height: 190, marginRight: 14 },
   top: {
@@ -83,6 +85,9 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   bookmark: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
     width: 34,
     height: 34,
     borderRadius: 17,
