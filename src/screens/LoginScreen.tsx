@@ -1,25 +1,51 @@
 import React, { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { Screen } from '../components/Screen';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SmartImage } from '../components/SmartImage';
 import { Logo } from '../components/Logo';
 import { AppText } from '../components/AppText';
 import { TextField } from '../components/TextField';
 import { Button } from '../components/Button';
+import { images } from '../data/images';
 import { colors } from '../theme';
 import { useRootNav } from '../hooks/useRootNav';
 import { useApp } from '../hooks/AppContext';
 import { hasErrors, validateContact, validatePassword } from '../utils/validation';
 
-/** Screen 2: login with email/phone, password, remember me, Google placeholder. */
+/**
+ * ASSETS TO REPLACE (same file names, in assets/images):
+ *  - login_bg.jpg        faded mountain photo shown behind the top of the screen
+ *  - imigongo_tile.png   one repeating imigongo tile; it is tiled along the bottom edge
+ *  - google_g.png        the multicolour Google "G"
+ *  - logo.png            the CodeHills logo (shared with other screens)
+ */
+const BG_HEIGHT = 330;
+const STRIP_HEIGHT = 30;
+
+/** Screen 2: Login. */
 export default function LoginScreen() {
   const navigation = useRootNav();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const { signIn, data } = useApp();
   const [contact, setContact] = useState(data.rememberedContact);
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(true);
   const [errors, setErrors] = useState<{ contact?: string; password?: string }>({});
   const [busy, setBusy] = useState(false);
+  const tiles = Math.ceil(width / STRIP_HEIGHT);
 
   const submit = async () => {
     const next = { contact: validateContact(contact), password: validatePassword(password) };
@@ -37,23 +63,29 @@ export default function LoginScreen() {
   };
 
   return (
-    <Screen padBottom>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <Pressable
-            onPress={() => navigation.goBack()}
-            hitSlop={10}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-            style={styles.backLink}
-          >
-            <Ionicons name="chevron-back" size={24} color={colors.chocolate} />
-          </Pressable>
-          <Logo size={72} showWordmark showSubtitle style={styles.logo} />
+    <View style={styles.root}>
+      {/* Faded mountain background that melts into the cream page */}
+      <SmartImage imageKey="loginBg" style={[styles.bg, { height: BG_HEIGHT }]}>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(247,240,229,0.35)' }]} />
+        <LinearGradient
+          colors={['rgba(247,240,229,0)', 'rgba(247,240,229,0.75)', colors.cream]}
+          locations={[0, 0.65, 1]}
+          style={StyleSheet.absoluteFill}
+        />
+      </SmartImage>
 
-          <AppText variant="title" style={styles.h}>
-            Welcome Back
-          </AppText>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.scroll,
+            { paddingTop: insets.top + 24, paddingBottom: STRIP_HEIGHT + insets.bottom + 24 },
+          ]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <Logo size={64} showWordmark showSubtitle style={styles.logo} />
+
+          <AppText style={styles.h}>Welcome Back</AppText>
           <AppText variant="body" color={colors.muted} style={styles.sub}>
             Sign in to continue your journey
           </AppText>
@@ -87,7 +119,7 @@ export default function LoginScreen() {
               accessibilityState={{ checked: remember }}
             >
               <View style={[styles.box, remember && styles.boxOn]}>
-                {remember && <Ionicons name="checkmark" size={14} color={colors.cream} />}
+                {remember && <Ionicons name="checkmark" size={13} color={colors.cream} />}
               </View>
               <AppText variant="small">Remember me</AppText>
             </Pressable>
@@ -99,7 +131,7 @@ export default function LoginScreen() {
                 )
               }
             >
-              <AppText variant="small" color={colors.caramel} style={styles.bold}>
+              <AppText variant="small" style={styles.bold}>
                 Forgot password?
               </AppText>
             </Pressable>
@@ -115,24 +147,29 @@ export default function LoginScreen() {
             <View style={styles.line} />
           </View>
 
-          <Button
-            title="Continue with Google"
-            icon="logo-google"
-            variant="secondary"
+          <Pressable
+            style={styles.google}
+            accessibilityRole="button"
+            accessibilityLabel="Continue with Google"
             onPress={() =>
               Alert.alert(
                 'Google sign-in (placeholder)',
                 'Google sign-in is not configured. It needs an OAuth client and backend support before it can work.',
               )
             }
-          />
+          >
+            <Image source={images.googleG} style={styles.g} contentFit="contain" />
+            <AppText variant="small" style={styles.googleText}>
+              Continue with Google
+            </AppText>
+          </Pressable>
 
           <View style={styles.footer}>
             <AppText variant="small" color={colors.muted}>
-              Don{'\u2019'}t have an account?{' '}
+              Don't have an account?{' '}
             </AppText>
             <Pressable onPress={() => navigation.navigate('Signup')} accessibilityRole="link">
-              <AppText variant="small" color={colors.chocolate} style={styles.bold}>
+              <AppText variant="small" style={styles.bold}>
                 Sign up
               </AppText>
             </Pressable>
@@ -143,33 +180,73 @@ export default function LoginScreen() {
           </AppText>
         </ScrollView>
       </KeyboardAvoidingView>
-    </Screen>
+
+      {/* Imigongo strip along the bottom edge (one tile, repeated) */}
+      <View
+        pointerEvents="none"
+        style={[styles.strip, { height: STRIP_HEIGHT + insets.bottom, paddingBottom: insets.bottom }]}
+      >
+        {Array.from({ length: tiles }).map((_, i) => (
+          <Image
+            key={i}
+            source={images.imigongoTile}
+            style={{ width: STRIP_HEIGHT, height: STRIP_HEIGHT }}
+            contentFit="cover"
+          />
+        ))}
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { padding: 24, paddingTop: 12 },
-  backLink: { alignSelf: 'flex-start', marginBottom: 8 },
-  logo: { marginBottom: 20 },
-  h: { marginTop: 4 },
-  sub: { marginBottom: 22, marginTop: 2 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  root: { flex: 1, backgroundColor: colors.cream },
+  bg: { position: 'absolute', top: 0, left: 0, right: 0 },
+  scroll: { paddingHorizontal: 24 },
+  logo: { marginBottom: 26 },
+  h: { fontFamily: 'Manrope_800ExtraBold', fontSize: 30, lineHeight: 36, color: colors.darkBrown },
+  sub: { marginTop: 2, marginBottom: 22 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
   remember: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   box: {
-    width: 20,
-    height: 20,
-    borderRadius: 5,
+    width: 18,
+    height: 18,
+    borderRadius: 4,
     borderWidth: 1.5,
-    borderColor: colors.caramel,
+    borderColor: colors.chocolate,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.white,
   },
-  boxOn: { backgroundColor: colors.chocolate, borderColor: colors.chocolate },
-  bold: { fontFamily: 'Manrope_700Bold' },
-  btn: { marginBottom: 6 },
+  boxOn: { backgroundColor: colors.chocolate },
+  bold: { fontFamily: 'Manrope_700Bold', color: colors.chocolate },
+  btn: { minHeight: 56 },
   or: { flexDirection: 'row', alignItems: 'center', marginVertical: 14 },
   line: { flex: 1, height: 1, backgroundColor: colors.border },
   orText: { marginHorizontal: 12 },
+  google: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 52,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: 'rgba(255,255,255,0.75)',
+  },
+  g: { width: 20, height: 20, marginRight: 10 },
+  googleText: { fontFamily: 'Manrope_600SemiBold', color: colors.darkBrown },
   footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 24 },
-  demo: { textAlign: 'center', marginTop: 14 },
+  demo: { textAlign: 'center', marginTop: 12 },
+  strip: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    overflow: 'hidden',
+    opacity: 0.55,
+    backgroundColor: colors.sandstone,
+  },
 });
