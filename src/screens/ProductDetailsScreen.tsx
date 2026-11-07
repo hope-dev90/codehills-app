@@ -123,11 +123,6 @@ export default function ProductDetailsScreen() {
           </View>
           <AppText style={styles.heading}>Craftsmanship</AppText>
           <AppText style={styles.desc}>{product.craftsmanship}</AppText>
-          {product.isDemo && (
-            <AppText style={styles.demo}>
-              Demo product: name, price and artisan are sample data. Nothing here can be bought for real yet.
-            </AppText>
-          )}
         </View>
       </ScrollView>
 

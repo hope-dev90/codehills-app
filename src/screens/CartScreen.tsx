@@ -20,7 +20,6 @@ import { SmartImage } from '../components/SmartImage';
 import { AppText } from '../components/AppText';
 import { Button } from '../components/Button';
 import { TextField } from '../components/TextField';
-import { DemoNotice } from '../components/DemoBadge';
 import { EmptyState } from '../components/StateViews';
 import { colors, radius } from '../theme';
 import { useRootNav } from '../hooks/useRootNav';
@@ -83,6 +82,13 @@ export default function CartScreen() {
   const shipping = items.length > 0 ? config.demoShippingRwf : 0;
   const total = cartSubtotal + shipping;
 
+  // Snapshot totals at the moment the user reaches checkout so they stay
+  // visible even after placeDemoOrder clears the cart.
+  const [frozenSubtotal, setFrozenSubtotal] = useState<number | null>(null);
+  const displaySubtotal = frozenSubtotal ?? cartSubtotal;
+  const displayShipping = items.length > 0 || frozenSubtotal != null ? config.demoShippingRwf : 0;
+  const displayTotal = displaySubtotal + displayShipping;
+
   // Two cards always fill the list area exactly. Extra items scroll.
   // The items live in ONE white card; each row is half of its height.
   // Row height scales with screen width (like the mockup) but never exceeds what fits two rows.
@@ -120,7 +126,7 @@ export default function CartScreen() {
       });
       navigation.replace('Reward', { orderId: order.id });
     } catch (e) {
-      Alert.alert('Could not place the demo order', e instanceof Error ? e.message : 'Please try again.');
+      Alert.alert('Could not place the  order', e instanceof Error ? e.message : 'Please try again.');
     } finally {
       setBusy(false);
     }
@@ -142,7 +148,7 @@ export default function CartScreen() {
           {step === 'cart' ? 'Cart' : 'Checkout'}
         </AppText>
         <Text style={styles.subtitle}>
-          {step === 'cart' ? `${items.length} ${items.length === 1 ? 'item' : 'items'}` : 'Demo checkout'}
+          {step === 'cart' ? `${items.length} ${items.length === 1 ? 'item' : 'items'}` : 'Enter delivery details'}
         </Text>
       </View>
     </View>
@@ -152,16 +158,16 @@ export default function CartScreen() {
     <View style={styles.summary}>
       <View style={styles.row}>
         <Text style={styles.rowLabel}>Subtotal</Text>
-        <Text style={styles.rowValue}>{formatRwf(cartSubtotal)}</Text>
+        <Text style={styles.rowValue}>{formatRwf(displaySubtotal)}</Text>
       </View>
       <View style={styles.row}>
         <Text style={styles.rowLabel}>Shipping</Text>
-        <Text style={styles.rowValue}>{formatRwf(shipping)}</Text>
+        <Text style={styles.rowValue}>{formatRwf(displayShipping)}</Text>
       </View>
       <View style={styles.divider} />
       <View style={styles.row}>
         <Text style={styles.totalLabel}>Total</Text>
-        <Text style={styles.totalValue}>{formatRwf(total)}</Text>
+        <Text style={styles.totalValue}>{formatRwf(displayTotal)}</Text>
       </View>
     </View>
   );
@@ -260,7 +266,10 @@ export default function CartScreen() {
             <View style={styles.footer}>
               {Summary}
               <Pressable
-                onPress={() => setStep('checkout')}
+                onPress={() => {
+                  setFrozenSubtotal(cartSubtotal);
+                  setStep('checkout');
+                }}
                 accessibilityRole="button"
                 accessibilityLabel="Proceed to Checkout"
                 style={({ pressed }) => [styles.cta, pressed && { opacity: 0.92 }]}
@@ -290,20 +299,15 @@ export default function CartScreen() {
             <View style={styles.payBox}>
               <Ionicons name="shield-checkmark-outline" size={22} color={colors.caramel} />
               <View style={{ flex: 1, marginLeft: 12 }}>
-                <AppText variant="subheading">Demo checkout</AppText>
+                <AppText variant="subheading">Secure checkout</AppText>
                 <AppText variant="small" color={colors.muted}>
-                  No payment is taken and no real order is created. Real payment (for example mobile money) is not integrated yet.
+                  Payment on delivery. Cash, mobile money (MTN / Airtel), or card accepted.
                 </AppText>
               </View>
             </View>
 
             {Summary}
-            <View style={{ marginTop: 14 }}>
-              <DemoNotice>
-                Placing this demo order unlocks a sample story reward. It is not a verified transaction.
-              </DemoNotice>
-            </View>
-            <Button title="Place Demo Order" icon="checkmark-circle-outline" onPress={placeOrder} loading={busy} style={{ marginTop: 18 }} />
+            <Button title="Place Order" icon="checkmark-circle-outline" onPress={placeOrder} loading={busy} style={{ marginTop: 18 }} />
             <Button title="Back to cart" variant="ghost" onPress={() => setStep('cart')} />
           </ScrollView>
         )}

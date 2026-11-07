@@ -25,8 +25,8 @@ export type RootStackParamList = {
   DestinationDetails: { destinationId: string };
   EventDetails: { eventId: string };
   StartBusiness: undefined;
-  CreateBusiness: { mode?: 'create' | 'edit' } | undefined;
-  BusinessDashboard: undefined;
+  CreateBusiness: { mode?: 'create' | 'edit'; materials?: string[] } | undefined;
+  BusinessDashboard: { materials?: string[] } | undefined;
   MyOrders: undefined;
   MyStories: undefined;
   SavedPlaces: undefined;

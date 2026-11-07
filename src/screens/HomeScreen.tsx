@@ -66,15 +66,12 @@ function PosterCard({
           {title}
         </AppText>
         {subtitle ? <AppText style={styles.posterSub}>{subtitle}</AppText> : null}
-        <Pressable
-          onPress={onCta ?? onPress}
-          hitSlop={6}
-          accessibilityRole="button"
-          accessibilityLabel={`${cta} ${title}`}
+        <View
+          accessibilityRole="none"
           style={styles.pill}
         >
           <AppText style={styles.pillText}>{cta}</AppText>
-        </Pressable>
+        </View>
       </View>
     </Pressable>
   );

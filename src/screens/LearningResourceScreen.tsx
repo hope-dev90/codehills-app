@@ -4,7 +4,6 @@ import { useRoute, RouteProp } from '@react-navigation/native';
 import { Screen } from '../components/Screen';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { AppText } from '../components/AppText';
-import { DemoNotice } from '../components/DemoBadge';
 import { EmptyState, LoadingState } from '../components/StateViews';
 import { useRootNav } from '../hooks/useRootNav';
 import { useLearningResources } from '../hooks/useResource';
@@ -31,7 +30,6 @@ export default function LearningResourceScreen() {
               {p}
             </AppText>
           ))}
-          {item.isDemo && <DemoNotice>Sample lesson text. Real learning content will be provided by CodeHills.</DemoNotice>}
         </ScrollView>
       )}
     </Screen>

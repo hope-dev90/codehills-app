@@ -47,7 +47,7 @@ export default function MapScreen() {
             height={270}
           />
           <AppText variant="caption" color={colors.muted} style={styles.note}>
-            Sample places. Distances are not shown until a real location service is connected.
+            Marker positions are approximate.
           </AppText>
 
           <View style={{ marginTop: 14 }}>

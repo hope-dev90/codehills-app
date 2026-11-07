@@ -7,7 +7,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SmartImage } from '../components/SmartImage';
 import { AppText } from '../components/AppText';
 import { Button } from '../components/Button';
-import { DemoNotice } from '../components/DemoBadge';
 import { EmptyState, LoadingState } from '../components/StateViews';
 import { Screen } from '../components/Screen';
 import { IconButton } from '../components/ScreenHeader';
@@ -105,7 +104,7 @@ export default function RewardScreen() {
             You{'\u2019'}ve Been Rewarded!
           </AppText>
           <AppText variant="body" color="rgba(255,255,255,0.95)" style={styles.sub}>
-            {story ? 'Your demo order unlocked a new story.' : 'You have already unlocked every sample story.'}
+            {story ? 'Your order unlocked a new story.' : 'You have already unlocked every story.'}
           </AppText>
         </View>
 
@@ -141,11 +140,6 @@ export default function RewardScreen() {
             <View style={[styles.fill, { width: `${Math.min(100, (unlocked / total) * 100)}%` }]} />
           </View>
         </View>
-
-        <DemoNotice>
-          Demo reward. No payment was taken, so this is not a verified transaction. Verified rewards need a real,
-          confirmed order.
-        </DemoNotice>
 
         <View style={{ marginTop: 18 }}>
           <OnDarkButton

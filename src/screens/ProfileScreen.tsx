@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '../components/Screen';
 import { ScreenHeader } from '../components/ScreenHeader';
@@ -35,22 +35,28 @@ export default function ProfileScreen() {
     { icon: 'information-circle-outline', label: 'About CodeHills', onPress: () => navigation.navigate('About') },
   ];
 
-  const confirmSignOut = () =>
-    Alert.alert(
-      user ? 'Sign out' : 'Exit',
-      user ? 'Your demo data stays on this device.' : 'You will return to the landing screen.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: user ? 'Sign out' : 'Exit',
-          style: 'destructive',
-          onPress: async () => {
-            if (user) await signOut();
-            navigation.reset({ index: 0, routes: [{ name: 'Landing' }] });
-          },
-        },
-      ],
-    );
+  const confirmSignOut = () => {
+    const title = user ? 'Sign out' : 'Exit';
+    const message = user
+      ? 'Your demo data stays on this device.'
+      : 'You will return to the landing screen.';
+
+    const doSignOut = async () => {
+      if (user) await signOut();
+      navigation.reset({ index: 0, routes: [{ name: 'Landing' }] });
+    };
+
+    // Alert.alert is a no-op on web — use window.confirm instead.
+    if (Platform.OS === 'web') {
+      if (window.confirm(`${title}\n\n${message}`)) doSignOut();
+      return;
+    }
+
+    Alert.alert(title, message, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: title, style: 'destructive', onPress: doSignOut },
+    ]);
+  };
 
   return (
     <Screen>

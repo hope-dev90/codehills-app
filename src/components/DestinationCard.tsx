@@ -3,7 +3,6 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SmartImage } from './SmartImage';
 import { AppText } from './AppText';
-import { DemoBadge } from './DemoBadge';
 import { colors, radius, shadow } from '../theme';
 import type { Destination } from '../types';
 
@@ -35,11 +34,6 @@ export function DestinationCard({ destination, selected = false, saved, onToggle
           <AppText variant="small" color={colors.muted} numberOfLines={2}>
             {destination.summary}
           </AppText>
-          {destination.isDemo && (
-            <View style={styles.badge}>
-              <DemoBadge />
-            </View>
-          )}
         </View>
       </Pressable>
 

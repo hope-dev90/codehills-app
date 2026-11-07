@@ -8,9 +8,22 @@ import React, {
   useState,
 } from 'react';
 import { loadAppData, saveAppData, defaultAppData, clearAppData } from '../services/storage';
-import { authService } from '../services/auth';
-import { orderService } from '../services/orders';
+import { authService, httpAuth } from '../services/auth';
+import { orderService, fetchOrders } from '../services/orders';
 import { config } from '../services/config';
+import {
+  syncFavorite,
+  syncBookmark,
+  fetchFavoriteIds,
+  fetchBookmarkIds,
+  fetchUnlockedStoryIds,
+} from '../services/collections';
+import {
+  fetchBusiness,
+  saveBusiness as apiSaveBusiness,
+  addBusinessProduct as apiAddBusinessProduct,
+  removeBusinessProduct as apiRemoveBusinessProduct,
+} from '../services/business';
 import type {
   AppData,
   BusinessProduct,
@@ -30,6 +43,8 @@ interface AppContextValue {
   cartSubtotal: number;
   signIn: (contact: string, password: string, remember: boolean) => Promise<UserProfile>;
   signUp: (fullName: string, contact: string, password: string) => Promise<UserProfile>;
+  /** Called after a successful Google OAuth flow with the resolved profile. */
+  signInWithGoogle: (user: UserProfile) => Promise<void>;
   signOut: () => Promise<void>;
   toggleFavorite: (productId: string) => void;
   toggleBookmark: (storyId: string) => void;
@@ -39,9 +54,9 @@ interface AppContextValue {
   removeFromCart: (productId: string) => void;
   placeDemoOrder: (delivery: DeliveryDetails) => Promise<Order>;
   setLanguage: (code: LanguageCode) => void;
-  saveBusiness: (input: Pick<BusinessProfile, 'name' | 'category' | 'description' | 'imageUri'>) => void;
-  addBusinessProduct: (name: string, priceRwf: number) => void;
-  removeBusinessProduct: (id: string) => void;
+  saveBusiness: (input: Pick<BusinessProfile, 'name' | 'category' | 'description' | 'imageUri'>) => Promise<void>;
+  addBusinessProduct: (name: string, priceRwf: number) => Promise<void>;
+  removeBusinessProduct: (id: string) => Promise<void>;
   resetDemoData: () => Promise<void>;
 }
 
@@ -50,25 +65,55 @@ const AppContext = createContext<AppContextValue | null>(null);
 const toggle = (list: string[], id: string) =>
   list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
 
+// ─── Sync server-side user data into local state ──────────────────────────────
+
+async function hydrateUserData(userId: string): Promise<Partial<AppData>> {
+  if (config.useMockData) return {};
+  try {
+    const [favorites, bookmarks, unlockedStories, orders, business] = await Promise.allSettled([
+      fetchFavoriteIds(),
+      fetchBookmarkIds(),
+      fetchUnlockedStoryIds(),
+      fetchOrders(),
+      fetchBusiness(),
+    ]);
+    return {
+      favorites:       favorites.status === 'fulfilled'       ? favorites.value       : undefined,
+      bookmarks:       bookmarks.status === 'fulfilled'       ? bookmarks.value       : undefined,
+      unlockedStories: unlockedStories.status === 'fulfilled' ? unlockedStories.value : undefined,
+      orders:          orders.status === 'fulfilled'          ? orders.value          : undefined,
+      business:        business.status === 'fulfilled'        ? business.value        : undefined,
+    };
+  } catch {
+    return {};
+  }
+}
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<AppData>(defaultAppData);
   const [ready, setReady] = useState(false);
   const hydrated = useRef(false);
 
-  // Hydrate from persistent storage once.
+  // ── Boot: load local storage, then try to restore session from backend ──────
   useEffect(() => {
     let active = true;
-    loadAppData().then((stored) => {
-      if (!active) return;
+    (async () => {
+      const stored = await loadAppData();
       // "Remember me" off: the session does not survive an app restart.
-      const next = stored.preferences.rememberMe ? stored : { ...stored, user: null };
-      setData(next);
+      let initial = stored.preferences.rememberMe ? stored : { ...stored, user: null };
+
+      // Try to restore session via refresh token
+      if (!config.useMockData && !initial.user) {
+        const restored = await httpAuth.refreshSession().catch(() => null);
+        if (restored) initial = { ...initial, user: restored };
+      }
+
+      if (!active) return;
+      setData(initial);
       hydrated.current = true;
       setReady(true);
-    });
-    return () => {
-      active = false;
-    };
+    })();
+    return () => { active = false; };
   }, []);
 
   // Persist every change after hydration.
@@ -77,6 +122,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [data]);
 
   const update = useCallback((fn: (prev: AppData) => AppData) => setData((prev) => fn(prev)), []);
+
+  // ── Auth ─────────────────────────────────────────────────────────────────────
 
   const signIn = useCallback<AppContextValue['signIn']>(
     async (contact, password, remember) => {
@@ -87,6 +134,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         rememberedContact: remember ? contact.trim() : '',
         preferences: { ...p.preferences, rememberMe: remember },
       }));
+      // Hydrate server-side data in the background
+      if (!config.useMockData) {
+        hydrateUserData(user.id).then((serverData) => {
+          update((p) => ({ ...p, ...serverData }));
+        });
+      }
       return user;
     },
     [update],
@@ -106,23 +159,77 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [update],
   );
 
+  const signInWithGoogle = useCallback(
+    async (user: UserProfile) => {
+      update((p) => ({
+        ...p,
+        user,
+        rememberedContact: user.contact,
+        preferences: { ...p.preferences, rememberMe: true },
+      }));
+      if (!config.useMockData) {
+        hydrateUserData(user.id).then((serverData) => {
+          update((p) => ({ ...p, ...serverData }));
+        });
+      }
+    },
+    [update],
+  );
+
   const signOut = useCallback(async () => {
     await authService.signOut();
-    update((p) => ({ ...p, user: null }));
+    update((p) => ({
+      ...defaultAppData,
+      preferences: p.preferences,
+      rememberedContact: p.rememberedContact,
+    }));
   }, [update]);
 
+  // ── Language ─────────────────────────────────────────────────────────────────
+
+  const setLanguage = useCallback(
+    (code: LanguageCode) => {
+      update((p) => ({ ...p, preferences: { ...p.preferences, language: code } }));
+      if (!config.useMockData) {
+        httpAuth.updateLanguage(code).catch(() => { /* best effort */ });
+      }
+    },
+    [update],
+  );
+
+  // ── Collections (optimistic local + background server sync) ─────────────────
+
   const toggleFavorite = useCallback(
-    (id: string) => update((p) => ({ ...p, favorites: toggle(p.favorites, id) })),
+    (id: string) => {
+      update((p) => ({ ...p, favorites: toggle(p.favorites, id) }));
+      if (!config.useMockData) {
+        syncFavorite(id).catch(() => {
+          // Roll back on error
+          update((p) => ({ ...p, favorites: toggle(p.favorites, id) }));
+        });
+      }
+    },
     [update],
   );
+
   const toggleBookmark = useCallback(
-    (id: string) => update((p) => ({ ...p, bookmarks: toggle(p.bookmarks, id) })),
+    (id: string) => {
+      update((p) => ({ ...p, bookmarks: toggle(p.bookmarks, id) }));
+      if (!config.useMockData) {
+        syncBookmark(id).catch(() => {
+          update((p) => ({ ...p, bookmarks: toggle(p.bookmarks, id) }));
+        });
+      }
+    },
     [update],
   );
+
   const toggleSavedPlace = useCallback(
     (id: string) => update((p) => ({ ...p, savedPlaces: toggle(p.savedPlaces, id) })),
     [update],
   );
+
+  // ── Cart ─────────────────────────────────────────────────────────────────────
 
   const addToCart = useCallback<AppContextValue['addToCart']>(
     (product, quantity = 1) => {
@@ -178,9 +285,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Latest data for async actions without re-creating callbacks on each change.
   const dataRef = useRef(data);
-  useEffect(() => {
-    dataRef.current = data;
-  });
+  useEffect(() => { dataRef.current = data; });
 
   const placeDemoOrder = useCallback(
     async (delivery: DeliveryDetails) => {
@@ -206,99 +311,92 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [update],
   );
 
-  const setLanguage = useCallback(
-    (code: LanguageCode) => update((p) => ({ ...p, preferences: { ...p.preferences, language: code } })),
-    [update],
-  );
+  // ── Business ──────────────────────────────────────────────────────────────────
 
   const saveBusiness = useCallback<AppContextValue['saveBusiness']>(
-    (input) =>
-      update((p) => ({
-        ...p,
-        business: {
-          name: input.name.trim(),
-          category: input.category,
-          description: input.description.trim(),
-          imageUri: input.imageUri,
-          createdAt: p.business?.createdAt ?? new Date().toISOString(),
-          products: p.business?.products ?? [],
-        },
-      })),
+    async (input) => {
+      if (!config.useMockData) {
+        const saved = await apiSaveBusiness(input);
+        update((p) => ({ ...p, business: saved }));
+      } else {
+        update((p) => ({
+          ...p,
+          business: {
+            name: input.name.trim(),
+            category: input.category,
+            description: input.description.trim(),
+            imageUri: input.imageUri,
+            createdAt: p.business?.createdAt ?? new Date().toISOString(),
+            products: p.business?.products ?? [],
+          },
+        }));
+      }
+    },
     [update],
   );
 
   const addBusinessProduct = useCallback(
-    (name: string, priceRwf: number) =>
-      update((p) => {
-        if (!p.business) return p;
+    async (name: string, priceRwf: number) => {
+      if (!config.useMockData) {
+        const product = await apiAddBusinessProduct(name, priceRwf);
+        update((p) => {
+          if (!p.business) return p;
+          return { ...p, business: { ...p.business, products: [...p.business.products, product] } };
+        });
+      } else {
         const item: BusinessProduct = { id: makeId('bp'), name: name.trim(), priceRwf };
-        return { ...p, business: { ...p.business, products: [...p.business.products, item] } };
-      }),
+        update((p) => {
+          if (!p.business) return p;
+          return { ...p, business: { ...p.business, products: [...p.business.products, item] } };
+        });
+      }
+    },
     [update],
   );
 
   const removeBusinessProduct = useCallback(
-    (id: string) =>
+    async (id: string) => {
+      if (!config.useMockData) {
+        await apiRemoveBusinessProduct(id);
+      }
       update((p) =>
         p.business
           ? { ...p, business: { ...p.business, products: p.business.products.filter((x) => x.id !== id) } }
           : p,
-      ),
+      );
+    },
     [update],
   );
+
+  // ── Reset ─────────────────────────────────────────────────────────────────────
 
   const resetDemoData = useCallback(async () => {
     await clearAppData();
     setData(defaultAppData);
   }, []);
 
-  const cartCount = useMemo(() => data.cart.reduce((n, c) => n + c.quantity, 0), [data.cart]);
-  const cartSubtotal = useMemo(
-    () => data.cart.reduce((n, c) => n + c.priceRwf * c.quantity, 0),
-    [data.cart],
-  );
+  // ── Derived ───────────────────────────────────────────────────────────────────
+
+  const cartCount    = useMemo(() => data.cart.reduce((n, c) => n + c.quantity, 0), [data.cart]);
+  const cartSubtotal = useMemo(() => data.cart.reduce((n, c) => n + c.priceRwf * c.quantity, 0), [data.cart]);
 
   const value = useMemo<AppContextValue>(
     () => ({
-      ready,
-      data,
-      cartCount,
-      cartSubtotal,
-      signIn,
-      signUp,
-      signOut,
-      toggleFavorite,
-      toggleBookmark,
-      toggleSavedPlace,
-      addToCart,
-      setCartQuantity,
-      removeFromCart,
-      placeDemoOrder,
-      setLanguage,
-      saveBusiness,
-      addBusinessProduct,
-      removeBusinessProduct,
+      ready, data, cartCount, cartSubtotal,
+      signIn, signUp, signInWithGoogle, signOut,
+      toggleFavorite, toggleBookmark, toggleSavedPlace,
+      addToCart, setCartQuantity, removeFromCart,
+      placeDemoOrder, setLanguage,
+      saveBusiness, addBusinessProduct, removeBusinessProduct,
       resetDemoData,
     }),
     [
-      ready,
-      data,
-      cartCount,
-      cartSubtotal,
-      signIn,
-      signUp,
-      signOut,
-      toggleFavorite,
-      toggleBookmark,
-      toggleSavedPlace,
-      addToCart,
-      setCartQuantity,
-      removeFromCart,
-      placeDemoOrder,
-      setLanguage,
-      saveBusiness,
-      addBusinessProduct,
-      removeBusinessProduct,
+      ready, data, cartCount, cartSubtotal,
+      signIn, signUp, signInWithGoogle, signOut,
+      toggleFavorite, toggleBookmark, toggleSavedPlace,
+      addToCart, setCartQuantity, removeFromCart,
+      placeDemoOrder, setLanguage,
+      saveBusiness, addBusinessProduct, removeBusinessProduct,
       resetDemoData,
     ],
   );

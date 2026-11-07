@@ -9,130 +9,62 @@ import {
   StyleSheet,
   TextInput,
   TextInputProps,
+  useWindowDimensions,
   View,
   ViewStyle,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Defs, Path, Pattern, Rect } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '../components/AppText';
 import { Button } from '../components/Button';
+import { Logo } from '../components/Logo';
 import { colors } from '../theme';
 import { useRootNav } from '../hooks/useRootNav';
 import { useApp } from '../hooks/AppContext';
 import { hasErrors, validateContact, validatePassword } from '../utils/validation';
-import { Logo } from '../components/Logo';
-/**
- * ASSETS TO REPLACE (same file names, in assets/images):
- *  - login_bg.jpg        faded mountain photo shown behind the top of the screen
- *  - logo.png            the CodeHills logo (shared with other screens)
- *
- * The Google "G" and the imigongo strip are drawn as inline SVG (react-native-svg),
- * so they need no bitmap assets.
- */
-// Layout measured from the design reference (dp).
-const BG_HEIGHT = 300;
-const STRIP_HEIGHT = 30;
-const LOGO_SIZE = 70;
-const SIDE_PADDING = 30;
+import { useGoogleSignIn } from '../services/googleAuth';
 
-// Bundled images (replace these two files with your own, keeping the names).
+/**
+ * ASSETS (assets/images, same file names):
+ *  - login_bg.jpg   sunrise over the hills photo (the full-bleed picture behind the top)
+ *  - logo.png       used by <Logo /> (shared with other screens)
+ *
+ * The Google "G", the wavy sheet edges and the imigongo strips are all inline SVG.
+ */
 const LOGIN_BG = require('../../assets/images/login_bg.jpg');
 
+const SIDE_PADDING = 26;
+const FIELD_HEIGHT = 46;
+const WAVE_TOP_HEIGHT = 46;
+const WAVE_BOTTOM_HEIGHT = 58;
+const STRIP_HEIGHT = 46;
+const LOGO_SIZE = 80;
+const INK = colors.darkBrown;
+const LINE = 'rgba(168,117,66,0.6)';
 
-/** Compact input used on this screen: 44dp high, 12dp radius, 13dp text. */
-function Field({
-  icon,
-  error,
-  password = false,
-  ...rest
-}: Omit<TextInputProps, 'style'> & {
-  icon: keyof typeof Ionicons.glyphMap;
-  error?: string;
-  password?: boolean;
-}) {
-  const [hidden, setHidden] = useState(password);
-  const [focused, setFocused] = useState(false);
+/** Imigongo diamond tile. `bold` is the red/brown strip at the very bottom; otherwise a faint line motif. */
+function ImigongoPattern({ id, bold = false }: { id: string; bold?: boolean }) {
   return (
-    <View style={fieldStyles.wrap}>
-      <View
-        style={[
-          fieldStyles.field,
-          focused && { borderColor: colors.caramel },
-          !!error && { borderColor: colors.danger },
-        ]}
-      >
-        <Ionicons name={icon} size={19} color={colors.caramel} style={fieldStyles.icon} />
-        <TextInput
-          {...rest}
-          secureTextEntry={hidden}
-          placeholderTextColor="#A39283"
-          onFocus={(e) => {
-            setFocused(true);
-            rest.onFocus?.(e);
-          }}
-          onBlur={(e) => {
-            setFocused(false);
-            rest.onBlur?.(e);
-          }}
-          style={fieldStyles.input}
-        />
-        {password && (
-          <Pressable
-            onPress={() => setHidden((h) => !h)}
-            hitSlop={10}
-            accessibilityRole="button"
-            accessibilityLabel={hidden ? 'Show password' : 'Hide password'}
-          >
-            <Ionicons name={hidden ? 'eye-outline' : 'eye-off-outline'} size={19} color={colors.muted} />
-          </Pressable>
-        )}
-      </View>
-      {error ? <AppText style={fieldStyles.error}>{error}</AppText> : null}
-    </View>
-  );
-}
-
-const fieldStyles = StyleSheet.create({
-  wrap: { marginBottom: 14 },
-  field: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 44,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.78)',
-  },
-  icon: { marginRight: 10 },
-  input: { flex: 1, fontFamily: 'Manrope_400Regular', fontSize: 13, color: colors.darkBrown, paddingVertical: 8 },
-  error: { marginTop: 4, marginLeft: 4, fontFamily: 'Manrope_500Medium', fontSize: 11, color: colors.danger },
-});
-
-/** Repeating imigongo diamond motif, drawn as a tiled SVG pattern. */
-function ImigongoPattern({
-  id,
-  color,
-  style,
-}: {
-  id: string;
-  color: string;
-  style?: StyleProp<ViewStyle>;
-}) {
-  return (
-    <Svg style={style} width="100%" height="100%">
+    <Svg width="100%" height="100%">
       <Defs>
-        <Pattern id={id} width={56} height={56} patternUnits="userSpaceOnUse">
-          <Path d="M28 0 L56 28 L28 56 L0 28 Z" fill="none" stroke={color} strokeWidth={2} />
-          <Path d="M28 12 L44 28 L28 44 L12 28 Z" fill="none" stroke={color} strokeWidth={2} />
-          <Path d="M28 22 L34 28 L28 34 L22 28 Z" fill={color} />
-          <Path
-            d="M0 0 L6 0 L0 6 Z M56 0 L50 0 L56 6 Z M0 56 L6 56 L0 50 Z M56 56 L50 56 L56 50 Z"
-            fill={color}
-          />
+        <Pattern id={id} width={46} height={46} patternUnits="userSpaceOnUse">
+          {bold ? (
+            <>
+              <Rect width={46} height={46} fill="#B8431F" />
+              <Path d="M23 0 L46 23 L23 46 L0 23 Z" fill={colors.darkBrown} />
+              <Path d="M23 5 L41 23 L23 41 L5 23 Z" fill={colors.cream} />
+              <Path d="M23 12 L34 23 L23 34 L12 23 Z" fill={colors.darkBrown} />
+              <Path d="M23 18 L28 23 L23 28 L18 23 Z" fill={colors.cream} />
+            </>
+          ) : (
+            <>
+              <Path d="M23 0 L46 23 L23 46 L0 23 Z" fill="none" stroke={colors.caramel} strokeWidth={2} />
+              <Path d="M23 10 L36 23 L23 36 L10 23 Z" fill="none" stroke={colors.caramel} strokeWidth={2} />
+              <Path d="M23 18 L28 23 L23 28 L18 23 Z" fill={colors.caramel} />
+            </>
+          )}
         </Pattern>
       </Defs>
       <Rect width="100%" height="100%" fill={`url(#${id})`} />
@@ -141,7 +73,7 @@ function ImigongoPattern({
 }
 
 /** The multicolour Google "G", drawn as inline SVG. */
-function GoogleIcon({ size = 20, style }: { size?: number; style?: StyleProp<ViewStyle> }) {
+function GoogleIcon({ size = 22, style }: { size?: number; style?: StyleProp<ViewStyle> }) {
   return (
     <Svg style={style} width={size} height={size} viewBox="0 0 48 48">
       <Path
@@ -164,16 +96,98 @@ function GoogleIcon({ size = 20, style }: { size?: number; style?: StyleProp<Vie
   );
 }
 
+/** Pill-shaped input with a leading icon. */
+function Field({
+  icon,
+  error,
+  password = false,
+  ...rest
+}: Omit<TextInputProps, 'style'> & {
+  icon: keyof typeof Ionicons.glyphMap;
+  error?: string;
+  password?: boolean;
+}) {
+  const [hidden, setHidden] = useState(password);
+  const [focused, setFocused] = useState(false);
+  return (
+    <View style={fieldStyles.wrap}>
+      <View
+        style={[
+          fieldStyles.field,
+          focused && { borderColor: colors.chocolate, borderWidth: 1.5 },
+          !!error && { borderColor: colors.danger },
+        ]}
+      >
+        <Ionicons name={icon} size={22} color={colors.chocolate} style={fieldStyles.icon} />
+        <TextInput
+          {...rest}
+          secureTextEntry={hidden}
+          placeholderTextColor="#A39283"
+          onFocus={(e) => {
+            setFocused(true);
+            rest.onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setFocused(false);
+            rest.onBlur?.(e);
+          }}
+          style={fieldStyles.input}
+        />
+        {password && (
+          <Pressable
+            onPress={() => setHidden((h) => !h)}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel={hidden ? 'Show password' : 'Hide password'}
+          >
+            <Ionicons name={hidden ? 'eye-off-outline' : 'eye-outline'} size={22} color={INK} />
+          </Pressable>
+        )}
+      </View>
+      {error ? <AppText style={fieldStyles.error}>{error}</AppText> : null}
+    </View>
+  );
+}
+
+const fieldStyles = StyleSheet.create({
+  wrap: { marginBottom: 12 },
+  field: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: FIELD_HEIGHT,
+    paddingHorizontal: 18,
+    borderWidth: 1,
+    borderColor: LINE,
+    borderRadius: FIELD_HEIGHT / 2,
+    backgroundColor: 'rgba(255,255,255,0.55)',
+  },
+  icon: { marginRight: 12 },
+  input: { flex: 1, fontFamily: 'Manrope_500Medium', fontSize: 14, color: INK, paddingVertical: 0 },
+  error: { marginTop: 3, marginLeft: 18, fontFamily: 'Manrope_500Medium', fontSize: 11, color: colors.danger },
+});
+
 /** Screen 2: Login. */
 export default function LoginScreen() {
   const navigation = useRootNav();
   const insets = useSafeAreaInsets();
-  const { signIn, data } = useApp();
+  const { height: screenH } = useWindowDimensions();
+  const { signIn, signInWithGoogle, data } = useApp();
   const [contact, setContact] = useState(data.rememberedContact);
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(true);
   const [errors, setErrors] = useState<{ contact?: string; password?: string }>({});
   const [busy, setBusy] = useState(false);
+
+  const photoHeight = screenH * 0.46;
+  const sheetOffset = screenH * 0.22; // where the wavy sheet starts
+
+  const { prompt: promptGoogle, loading: googleLoading } = useGoogleSignIn(
+    async (user) => {
+      await signInWithGoogle(user);
+      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+    },
+    (msg) => Alert.alert('Google sign-in failed', msg),
+  );
 
   const submit = async () => {
     const next = { contact: validateContact(contact), password: validatePassword(password) };
@@ -183,8 +197,9 @@ export default function LoginScreen() {
     try {
       await signIn(contact, password, remember);
       navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
-    } catch {
-      Alert.alert('Could not sign in', 'Please try again.');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Please try again.';
+      Alert.alert('Sign in failed', msg);
     } finally {
       setBusy(false);
     }
@@ -192,225 +207,216 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.root}>
-      {/* Faded mountain background that melts into the cream page */}
-      <View style={[styles.bg, { height: BG_HEIGHT }]}>
+      {/* Full-bleed sunrise photo */}
+      <View style={[styles.photo, { height: photoHeight }]}>
         <Image source={LOGIN_BG} style={StyleSheet.absoluteFill} contentFit="cover" />
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(247,240,229,0.35)' }]} />
-        <LinearGradient
-          colors={['rgba(247,240,229,0)', 'rgba(247,240,229,0.75)', colors.cream]}
-          locations={[0, 0.65, 1]}
-          style={StyleSheet.absoluteFill}
-        />
+      </View>
+
+      {/* Logo + wordmark on the photo */}
+      <View pointerEvents="none" style={[styles.brand, { top: insets.top + 14 }]}>
+        <Logo size={LOGO_SIZE} />
+        <AppText style={styles.wordmark}>CodeHills</AppText>
       </View>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
-          contentContainerStyle={[
-            styles.scroll,
-            { paddingTop: insets.top + 32, paddingBottom: STRIP_HEIGHT + insets.bottom + 20 },
-          ]}
+          contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          bounces={false}
         >
-          <View style={styles.logoBlock}>
-            <Logo size={LOGO_SIZE} />
-            <AppText style={styles.wordmark}>CodeHills</AppText>
-            <AppText style={styles.tagline}>Heritage   ·   Culture   ·   Business</AppText>
-          </View>
+          <View style={{ height: sheetOffset }} />
 
-          <AppText style={styles.h}>Welcome Back</AppText>
-          <AppText style={styles.sub}>
-            Sign in to continue your journey
-          </AppText>
-
-          <Field
-            icon="person-outline"
-            placeholder="Email or phone number"
-            value={contact}
-            onChangeText={setContact}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="username"
-            error={errors.contact}
-          />
-          <Field
-            icon="lock-closed-outline"
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            password
-            autoCapitalize="none"
-            autoComplete="password"
-            error={errors.password}
-          />
-
-          <View style={styles.row}>
-            <Pressable
-              onPress={() => setRemember((r) => !r)}
-              style={styles.remember}
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: remember }}
-            >
-              <View style={[styles.box, remember && styles.boxOn]}>
-                {remember && <Ionicons name="checkmark" size={13} color={colors.cream} />}
-              </View>
-              <AppText style={styles.small}>Remember me</AppText>
-            </Pressable>
-            <Pressable
-              onPress={() =>
-                Alert.alert(
-                  'Password reset',
-                  'Password reset needs the CodeHills account service, which is not connected yet. In this demo, any valid email/phone and a password of 6+ characters will sign you in.',
-                )
-              }
-            >
-              <AppText style={[styles.small, styles.bold]}>
-                Forgot password?
-              </AppText>
-            </Pressable>
-          </View>
-
-          <Button title="Login" onPress={submit} loading={busy} style={styles.btn} />
-
-          <View style={styles.or}>
-            <View style={styles.line} />
-            <AppText style={styles.orText}>
-              or
-            </AppText>
-            <View style={styles.line} />
-          </View>
-
-          <Pressable
-            style={styles.google}
-            accessibilityRole="button"
-            accessibilityLabel="Continue with Google"
-            onPress={() =>
-              Alert.alert(
-                'Google sign-in (placeholder)',
-                'Google sign-in is not configured. It needs an OAuth client and backend support before it can work.',
-              )
-            }
+          {/* Wavy top edge of the cream sheet */}
+          <Svg
+            width="100%"
+            height={WAVE_TOP_HEIGHT}
+            viewBox="0 0 390 46"
+            preserveAspectRatio="none"
+            style={styles.waveTop}
           >
-            <GoogleIcon size={20} style={styles.g} />
-            <AppText style={styles.googleText}>
-              Continue with Google
-            </AppText>
-          </Pressable>
+            <Path
+              d="M0 34 C 30 10, 80 0, 130 4 C 190 9, 230 40, 290 40 C 335 40, 365 28, 390 30 L390 46 L0 46 Z"
+              fill="rgba(247,240,229,0.55)"
+            />
+            <Path
+              d="M0 40 C 20 20, 70 8, 112 12 C 170 18, 225 44, 285 44 C 332 44, 366 34, 390 36 L390 46 L0 46 Z"
+              fill={colors.cream}
+            />
+          </Svg>
 
-          <View style={styles.footer}>
-            <AppText style={[styles.small, { color: colors.muted }]}>
-              Don&apos;t have an account?{' '}
-            </AppText>
-            <Pressable onPress={() => navigation.navigate('Signup')} accessibilityRole="link">
-              <AppText style={[styles.small, styles.bold]}>
-                Sign up
-              </AppText>
-            </Pressable>
+          <View style={styles.sheet}>
+            {/* Faint imigongo motif hugging the left and right edges */}
+            <View pointerEvents="none" style={[styles.edge, { left: 0 }]}>
+              <ImigongoPattern id="imigongo-edge-l" />
+            </View>
+            <View pointerEvents="none" style={[styles.edge, { right: 0 }]}>
+              <ImigongoPattern id="imigongo-edge-r" />
+            </View>
+
+            <View style={styles.body}>
+              <Field
+                icon="person-outline"
+                placeholder="Email or phone number"
+                value={contact}
+                onChangeText={setContact}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoComplete="username"
+                error={errors.contact}
+              />
+              <Field
+                icon="lock-closed-outline"
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                password
+                autoCapitalize="none"
+                autoComplete="password"
+                error={errors.password}
+              />
+
+              <View style={styles.row}>
+                <Pressable
+                  onPress={() => setRemember((r) => !r)}
+                  style={styles.remember}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: remember }}
+                >
+                  <View style={[styles.box, remember && styles.boxOn]}>
+                    {remember && <Ionicons name="checkmark" size={16} color={colors.white} />}
+                  </View>
+                  <AppText style={styles.small}>Remember me</AppText>
+                </Pressable>
+                <Pressable
+                  onPress={() =>
+                    Alert.alert(
+                      'Password reset',
+                      'Password reset requires the CodeHills account service. Please contact support.',
+                    )
+                  }
+                  accessibilityRole="button"
+                >
+                  <AppText style={styles.small}>Forgot password?</AppText>
+                </Pressable>
+              </View>
+
+              <Button title="Login" onPress={submit} loading={busy} style={styles.btn} />
+
+              <View style={styles.or}>
+                <View style={styles.line} />
+                <AppText style={styles.orText}>or</AppText>
+                <View style={styles.line} />
+              </View>
+
+              <Pressable
+                style={[styles.google, (googleLoading || busy) && styles.googleDisabled]}
+                accessibilityRole="button"
+                accessibilityLabel="Continue with Google"
+                onPress={promptGoogle}
+                disabled={googleLoading || busy}
+              >
+                <GoogleIcon size={22} style={styles.g} />
+                <AppText style={styles.googleText}>Continue with Google</AppText>
+              </Pressable>
+
+              <View style={styles.footer}>
+                <AppText style={styles.footerText}>Don&apos;t have an account? </AppText>
+                <Pressable onPress={() => navigation.navigate('Signup')} accessibilityRole="link">
+                  <AppText style={[styles.footerText, styles.footerBold]}>Sign up</AppText>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Dark brown ribbon waves, then the red/brown imigongo strip */}
+            <Svg
+              width="100%"
+              height={WAVE_BOTTOM_HEIGHT}
+              viewBox="0 0 390 58"
+              preserveAspectRatio="none"
+              style={styles.waveBottom}
+            >
+              <Path
+                d="M0 14 C 60 2, 130 14, 210 30 C 290 46, 350 30, 390 16 L390 58 L0 58 Z"
+                fill={colors.darkBrown}
+              />
+              <Path
+                d="M0 34 C 80 22, 170 44, 260 44 C 320 44, 360 34, 390 28 L390 58 L0 58 Z"
+                fill={colors.cream}
+              />
+              <Path
+                d="M0 46 C 90 36, 180 54, 270 52 C 330 51, 365 44, 390 40"
+                fill="none"
+                stroke={colors.darkBrown}
+                strokeWidth={3}
+              />
+            </Svg>
+
+            <View style={[styles.strip, { height: STRIP_HEIGHT + insets.bottom }]}>
+              <ImigongoPattern id="imigongo-strip" bold />
+            </View>
           </View>
-
-          <AppText style={styles.demo}>
-            Demo sign-in: no real account is created or verified.
-          </AppText>
         </ScrollView>
       </KeyboardAvoidingView>
-
-      {/* Imigongo strip along the bottom edge (SVG pattern, tiled) */}
-      <View
-        pointerEvents="none"
-        style={[styles.strip, { height: STRIP_HEIGHT + insets.bottom, paddingBottom: insets.bottom }]}
-      >
-        <ImigongoPattern id="imigongo-strip" color={colors.caramel} />
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.cream },
-  bg: { position: 'absolute', top: 0, left: 0, right: 0 },
-  scroll: { paddingHorizontal: SIDE_PADDING },
-
-  // Logo block: 70dp symbol, 30dp wordmark, 11dp tagline
-  logoBlock: { alignItems: 'center', marginBottom: 30 },
+  photo: { position: 'absolute', top: 0, left: 0, right: 0 },
+  brand: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
   wordmark: {
-    marginTop: 4,
-    fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 30,
-    lineHeight: 36,
-    color: colors.darkBrown,
-  },
-  tagline: {
-    marginTop: 1,
-    fontFamily: 'Manrope_500Medium',
-    fontSize: 11,
-    lineHeight: 15,
-    color: colors.darkBrown,
-  },
-
-  // Heading: 28dp title, 14dp subtitle
-  h: { fontFamily: 'Manrope_800ExtraBold', fontSize: 28, lineHeight: 34, color: colors.darkBrown },
-  sub: {
     marginTop: 6,
-    marginBottom: 21,
-    fontFamily: 'Manrope_400Regular',
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.muted,
+    fontFamily: 'Manrope_800ExtraBold',
+    fontSize: 34,
+    lineHeight: 42,
+    color: colors.chocolate,
+    textShadowColor: 'rgba(255,255,255,0.35)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 6,
   },
-
-  small: { fontFamily: 'Manrope_500Medium', fontSize: 12, lineHeight: 16, color: colors.darkBrown },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 1, marginBottom: 19 },
-  remember: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  scroll: { flexGrow: 1 },
+  waveTop: { marginBottom: -1 },
+  sheet: { flexGrow: 1, backgroundColor: colors.cream, justifyContent: 'space-between' },
+  edge: { position: 'absolute', top: 0, bottom: WAVE_BOTTOM_HEIGHT, width: 40, overflow: 'hidden', opacity: 0.1 },
+  body: { paddingHorizontal: SIDE_PADDING, paddingTop: 6, paddingBottom: 18 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, marginBottom: 18 },
+  remember: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   box: {
-    width: 16,
-    height: 16,
-    borderRadius: 3,
+    width: 22,
+    height: 22,
+    borderRadius: 6,
     borderWidth: 1.5,
     borderColor: colors.chocolate,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255,255,255,0.55)',
   },
   boxOn: { backgroundColor: colors.chocolate },
-  bold: { fontFamily: 'Manrope_700Bold', color: colors.chocolate },
-
-  // Login button: full width, 48dp high pill
-  btn: { minHeight: 48, height: 48, paddingVertical: 0 },
-
-  or: { flexDirection: 'row', alignItems: 'center', marginVertical: 18 },
-  line: { flex: 1, height: 1, backgroundColor: colors.border },
-  orText: { marginHorizontal: 12, fontFamily: 'Manrope_500Medium', fontSize: 11, lineHeight: 14, color: colors.muted },
-
-  // Google button: 44dp high, 12dp radius
+  small: { fontFamily: 'Manrope_500Medium', fontSize: 14, lineHeight: 18, color: INK },
+  // Login button: full width pill
+  btn: { height: 50, minHeight: 50, paddingVertical: 0, borderRadius: 25 },
+  or: { flexDirection: 'row', alignItems: 'center', marginTop: 16, marginBottom: 16 },
+  line: { flex: 1, height: 1, backgroundColor: LINE },
+  orText: { marginHorizontal: 14, fontFamily: 'Manrope_500Medium', fontSize: 14, lineHeight: 18, color: INK },
+  // Google button: outlined pill
   google: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 44,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: 'rgba(255,255,255,0.78)',
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1.2,
+    borderColor: colors.chocolate,
+    backgroundColor: 'rgba(255,255,255,0.45)',
   },
-  g: { marginRight: 10 },
-  googleText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, lineHeight: 18, color: colors.darkBrown },
-
-  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 22 },
-  demo: {
-    textAlign: 'center',
-    marginTop: 10,
-    fontFamily: 'Manrope_400Regular',
-    fontSize: 10,
-    lineHeight: 14,
-    color: colors.muted,
-  },
-  strip: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    overflow: 'hidden',
-    opacity: 0.45,
-    backgroundColor: colors.sandstone,
-  },
+  googleDisabled: { opacity: 0.5 },
+  g: { marginRight: 12 },
+  googleText: { fontFamily: 'Manrope_600SemiBold', fontSize: 15, lineHeight: 20, color: INK },
+  footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 18 },
+  footerText: { fontFamily: 'Manrope_500Medium', fontSize: 14, lineHeight: 20, color: INK },
+  footerBold: { fontFamily: 'Manrope_800ExtraBold' },
+  waveBottom: { marginBottom: -1 },
+  strip: { overflow: 'hidden', backgroundColor: '#B8431F' },
 });

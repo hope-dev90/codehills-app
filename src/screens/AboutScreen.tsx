@@ -5,7 +5,6 @@ import { ScreenHeader } from '../components/ScreenHeader';
 import { Logo } from '../components/Logo';
 import { AppText } from '../components/AppText';
 import { Button } from '../components/Button';
-import { DemoNotice } from '../components/DemoBadge';
 import { colors } from '../theme';
 import { config } from '../services/config';
 
@@ -35,10 +34,6 @@ export default function AboutScreen() {
         <AppText variant="body" style={styles.p}>
           Heritage content will be connected to the materials published by the CodeHills team at {config.contentWebsite}.
         </AppText>
-        <DemoNotice>
-          This build uses sample content and a demo checkout. Backend, authentication, real payments and verified
-          content are not connected yet.
-        </DemoNotice>
         <Button title="Visit the website" icon="open-outline" variant="secondary" onPress={openSite} style={{ marginTop: 20 }} />
       </ScrollView>
     </Screen>

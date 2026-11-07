@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -112,17 +112,18 @@ export default function StoriesScreen() {
   const route = useRoute<RouteProp<TabParamList, 'Stories'>>();
   const { data, toggleBookmark } = useApp();
   const stories = useStories();
-  const [query, setQuery] = useState('');
-  const [showSearch, setShowSearch] = useState(false);
+  const [query, setQuery] = useState(route.params?.query ?? '');
+  const [showSearch, setShowSearch] = useState(!!route.params?.query);
   const [filter, setFilter] = useState('All');
 
-  // Search text passed from other screens
-  useEffect(() => {
-    if (route.params?.query !== undefined) {
-      setQuery(route.params.query);
-      setShowSearch(!!route.params.query);
-    }
-  }, [route.params?.query]);
+  // Sync search text when navigated here from another screen with a query param.
+  const routeQuery = route.params?.query;
+  const [prevRouteQuery, setPrevRouteQuery] = useState(routeQuery);
+  if (routeQuery !== prevRouteQuery) {
+    setPrevRouteQuery(routeQuery);
+    setQuery(routeQuery ?? '');
+    setShowSearch(!!routeQuery);
+  }
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();

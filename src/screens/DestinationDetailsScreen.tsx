@@ -7,7 +7,6 @@ import { SmartImage } from '../components/SmartImage';
 import { AppText } from '../components/AppText';
 import { Button } from '../components/Button';
 import { IconButton } from '../components/ScreenHeader';
-import { DemoNotice } from '../components/DemoBadge';
 import { EmptyState, LoadingState } from '../components/StateViews';
 import { Screen } from '../components/Screen';
 import { colors, radius } from '../theme';
@@ -77,9 +76,6 @@ export default function DestinationDetailsScreen() {
               Approximate location: {d.latitude.toFixed(2)}, {d.longitude.toFixed(2)}
             </AppText>
           </View>
-          {d.isDemo && (
-            <DemoNotice>Demo entry. Description and position are placeholders, and no distances or opening times are shown.</DemoNotice>
-          )}
           <Button
             title="Back to map"
             icon="map-outline"

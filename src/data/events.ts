@@ -1,8 +1,7 @@
 import type { EventItem } from '../types';
 
 /**
- * DEMONSTRATION EVENTS.
- * These are NOT real listings and carry no real dates. Real events must come from the backend.
+ * Sample event listings for layout and discovery. Not real dated programmes.
  */
 export const mockEvents: EventItem[] = [
   {
@@ -13,7 +12,7 @@ export const mockEvents: EventItem[] = [
     dateLabel: 'Sample event, no date',
     summary: 'Placeholder for a celebration of music, dance and crafts.',
     description:
-      'This is a sample event used to show the layout. Real festivals, with verified dates and venues, will be loaded from the CodeHills backend.',
+      'Sample event used to show the layout. Real festivals, with verified dates and venues, will be published by CodeHills organisers.',
     image: 'festival',
     isDemo: true,
   },
@@ -25,7 +24,7 @@ export const mockEvents: EventItem[] = [
     dateLabel: 'Sample event, no date',
     summary: 'Placeholder for a farm visit and tasting.',
     description:
-      'This is a sample event used to show the layout. Real coffee experiences will be added by partner farms through the backend.',
+      'Sample event used to show the layout. Real coffee experiences will be added by partner farms.',
     image: 'coffeeHarvest',
     isDemo: true,
   },
@@ -36,8 +35,7 @@ export const mockEvents: EventItem[] = [
     location: 'Location to be announced',
     dateLabel: 'Sample event, no date',
     summary: 'Placeholder for a hands-on session with local artisans.',
-    description:
-      'This is a sample event used to show the layout. Real workshops will be added by artisans and organisers.',
+    description: 'Sample event used to show the layout. Real workshops will be added by artisans and organisers.',
     image: 'artisan',
     isDemo: true,
   },

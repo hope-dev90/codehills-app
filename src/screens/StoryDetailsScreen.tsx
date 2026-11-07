@@ -101,9 +101,6 @@ export default function StoryDetailsScreen() {
             {p}
           </AppText>
         ))}
-        {story.isDemo && (
-          <AppText style={styles.demo}>Demo text, not verified heritage content.</AppText>
-        )}
 
         <View style={styles.tags}>
           {tags.map((t) => (

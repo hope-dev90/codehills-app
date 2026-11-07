@@ -23,6 +23,8 @@ import { colors } from '../theme';
 import { useRootNav } from '../hooks/useRootNav';
 import { useApp } from '../hooks/AppContext';
 import { hasErrors, validateContact, validatePassword, validateRequired } from '../utils/validation';
+import { useGoogleSignIn } from '../services/googleAuth';
+import { authService } from '../services/auth';
 
 /**
  * ASSETS (assets/images, replace with your own using the same file name):
@@ -160,27 +162,42 @@ const fieldStyles = StyleSheet.create({
 export default function SignupScreen() {
   const navigation = useRootNav();
   const insets = useSafeAreaInsets();
-  const { signUp } = useApp();
+  const { signInWithGoogle } = useApp();
   const [fullName, setFullName] = useState('');
   const [contact, setContact] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [busy, setBusy] = useState(false);
 
+  const { prompt: promptGoogle, loading: googleLoading } = useGoogleSignIn(
+    async (user) => {
+      await signInWithGoogle(user);
+      navigation.reset({ index: 0, routes: [{ name: 'Onboarding' }] });
+    },
+    (msg) => Alert.alert('Google sign-in failed', msg),
+  );
+
   const submit = async () => {
+    const passwordMismatch =
+      password && confirmPassword && password !== confirmPassword
+        ? "Passwords don't match"
+        : undefined;
     const next = {
       fullName: validateRequired(fullName, 'your full name', 2),
       contact: validateContact(contact),
       password: validatePassword(password),
+      confirmPassword: passwordMismatch ?? validateRequired(confirmPassword, 'confirm password', 1),
     };
     setErrors(next);
     if (hasErrors(next)) return;
     setBusy(true);
     try {
-      await signUp(fullName, contact, password);
-      navigation.reset({ index: 0, routes: [{ name: 'Onboarding' }] });
-    } catch {
-      Alert.alert('Could not create account', 'Please try again.');
+      await authService.signUp(fullName, contact, password);
+      navigation.replace('Login');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Please try again.';
+      Alert.alert('Sign up failed', msg);
     } finally {
       setBusy(false);
     }
@@ -250,6 +267,16 @@ export default function SignupScreen() {
                   autoComplete="new-password"
                   error={errors.password}
                 />
+                <Field
+                  icon="lock-closed-outline"
+                  placeholder="Confirm password"
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  password
+                  autoCapitalize="none"
+                  autoComplete="new-password"
+                  error={errors.confirmPassword}
+                />
 
                 <Button title="Sign Up" onPress={submit} loading={busy} style={styles.btn} />
 
@@ -263,12 +290,8 @@ export default function SignupScreen() {
                   style={styles.google}
                   accessibilityRole="button"
                   accessibilityLabel="Continue with Google"
-                  onPress={() =>
-                    Alert.alert(
-                      'Google sign-in (placeholder)',
-                      'Google sign-in is not configured. It needs an OAuth client and backend support before it can work.',
-                    )
-                  }
+                  onPress={promptGoogle}
+                  disabled={googleLoading || busy}
                 >
                   <GoogleIcon size={24} style={styles.g} />
                   <AppText style={styles.googleText}>Continue with Google</AppText>

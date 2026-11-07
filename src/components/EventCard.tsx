@@ -4,7 +4,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SmartImage } from './SmartImage';
 import { AppText } from './AppText';
 import { Button } from './Button';
-import { DemoBadge } from './DemoBadge';
 import { colors, radius, shadow } from '../theme';
 import type { EventItem } from '../types';
 
@@ -21,11 +20,6 @@ export function EventCard({ event, onPress }: Props) {
           colors={['rgba(43,33,27,0.0)', 'rgba(43,33,27,0.55)']}
           style={StyleSheet.absoluteFill}
         />
-        {event.isDemo && (
-          <View style={styles.badge}>
-            <DemoBadge label="Demo event" />
-          </View>
-        )}
       </SmartImage>
       <View style={styles.body}>
         <AppText variant="heading" numberOfLines={2}>

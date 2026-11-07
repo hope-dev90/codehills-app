@@ -1,6 +1,6 @@
 import type { ImageKey } from '../data/images';
 
-export type StoryCategory = 'Culture' | 'Traditions' | 'Heritage' | 'Crafts' | 'Places' | 'Food';
+export type StoryCategory = string;
 
 export interface Story {
   id: string;
@@ -12,12 +12,13 @@ export interface Story {
   body: string[];
   tags: string[];
   image: ImageKey;
-  /** Remote image from the future backend; takes priority over `image` when present. */
   imageUrl?: string;
   gallery: ImageKey[];
+  relatedStoryIds: string[];
+  location?: string;
+  explorerCategory?: string;
   /** True while the content is sample text and not verified heritage material. */
   isDemo: boolean;
-  /** Where the verified version of this story will come from. */
   sourceNote?: string;
 }
 
@@ -31,15 +32,22 @@ export interface Artisan {
 export interface Product {
   id: string;
   name: string;
-  priceRwf: number;
+  slug: string;
+  shortDescription: string;
+  description: string;
   category: ProductCategory;
+  categoryId: string;
+  priceRwf: number;
+  currency: 'RWF';
   image: ImageKey;
   imageUrl?: string;
-  description: string;
+  gallery: ImageKey[];
   craftsmanship: string;
   tags: string[];
   artisan: Artisan;
-  /** Story unlocked when this product is part of a (demo) order. */
+  sellerName: string;
+  isActive: boolean;
+  /** Story unlocked when this product is part of a confirmed order. */
   rewardStoryId: string;
   isDemo: boolean;
 }
@@ -52,7 +60,6 @@ export interface Destination {
   category: DestinationCategory;
   summary: string;
   description: string;
-  /** Approximate coordinates, for map placement only. */
   latitude: number;
   longitude: number;
   image: ImageKey;
@@ -67,7 +74,6 @@ export interface EventItem {
   title: string;
   category: EventCategory;
   location: string;
-  /** Free-form label. Sample events never carry a made-up calendar date. */
   dateLabel: string;
   summary: string;
   description: string;
@@ -93,6 +99,17 @@ export interface DeliveryDetails {
   city: string;
 }
 
+export type PaymentMethod = 'cash_on_delivery' | 'mtn_momo' | 'airtel_money' | 'card';
+
+export type OrderFulfillmentStatus = 'placed' | 'preparing' | 'shipped' | 'delivered' | 'cancelled';
+export type OrderPaymentStatus =
+  | 'unpaid'
+  | 'pending'
+  | 'paid'
+  | 'failed'
+  | 'sandbox_unpaid'
+  | 'demo_no_payment';
+
 export interface Order {
   id: string;
   createdAt: string;
@@ -100,11 +117,12 @@ export interface Order {
   subtotalRwf: number;
   shippingRwf: number;
   totalRwf: number;
+  currency: 'RWF';
   delivery: DeliveryDetails;
-  /** Always a demo order until a real payment/order backend is connected. */
-  status: 'demo_placed';
-  paymentStatus: 'demo_no_payment';
-  isDemo: true;
+  status: OrderFulfillmentStatus | 'demo_placed';
+  paymentStatus: OrderPaymentStatus;
+  paymentMethod: PaymentMethod;
+  isDemo: boolean;
   rewardStoryId: string | null;
 }
 
@@ -115,6 +133,7 @@ export interface BusinessProduct {
 }
 
 export interface BusinessProfile {
+  id?: string;
   name: string;
   category: string;
   description: string;
@@ -143,8 +162,8 @@ export interface UserProfile {
   id: string;
   fullName: string;
   contact: string;
-  /** Always true for now: there is no real authentication backend. */
-  isDemo: true;
+  authProvider: 'password' | 'google';
+  isDemo: boolean;
 }
 
 export type LanguageCode = 'en' | 'rw' | 'fr';

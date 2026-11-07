@@ -4,7 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '../components/Screen';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { AppText } from '../components/AppText';
-import { DemoNotice } from '../components/DemoBadge';
 import { colors, radius } from '../theme';
 import { useApp } from '../hooks/AppContext';
 import { useToast } from '../hooks/ToastContext';
@@ -45,7 +44,6 @@ export default function LanguageScreen() {
             </Pressable>
           );
         })}
-        <DemoNotice>Your choice is saved, but the app text is only available in English for now.</DemoNotice>
       </View>
     </Screen>
   );

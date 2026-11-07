@@ -93,6 +93,45 @@ function AddButton({ onPress, name }: { onPress: () => void; name: string }) {
   );
 }
 
+type SquareCardProps = {
+  item: ShopItem;
+  highlighted: boolean;
+  dimmed: boolean;
+  isFav: boolean;
+  onOpen: () => void;
+  onFav: () => void;
+  onAdd: () => void;
+};
+
+function SquareCard({ item, highlighted, dimmed, isFav, onOpen, onFav, onAdd }: SquareCardProps) {
+  return (
+    <View style={[styles.card, { flex: 1 }, dimmed && styles.dim, highlighted && styles.cardOn]}>
+      <Pressable
+        onPress={onOpen}
+        accessibilityRole="button"
+        accessibilityLabel={`Open product: ${item.name}`}
+        style={styles.squareImgWrap}
+      >
+        <Image source={item.source} style={IMG_FILL} resizeMode="cover" />
+      </Pressable>
+      <Heart on={isFav} onPress={onFav} />
+      <View style={styles.squareBody}>
+        <AppText variant="subheading" color={DARK} numberOfLines={1}>
+          {item.name}
+        </AppText>
+        <Text style={styles.tags} numberOfLines={1}>
+          {item.tags}
+        </Text>
+        <View style={styles.priceRow}>
+          <Text style={styles.price}>{formatRwf(item.priceRwf)}</Text>
+          <Rating item={item} />
+        </View>
+        <AddButton onPress={onAdd} name={item.name} />
+      </View>
+    </View>
+  );
+}
+
 export default function ShopScreen() {
   const navigation = useRootNav();
   const insets = useSafeAreaInsets();
@@ -122,37 +161,6 @@ export default function ShopScreen() {
   const isFav = (item: ShopItem) => data.favorites.includes(item.id);
 
   const [tshirt, bracelet, pen] = ITEMS;
-
-  // The card is a plain View: a button must not be nested inside another button on web,
-  // so only the image area is pressable and the heart / add button are its siblings.
-  const SquareCard = ({ item }: { item: ShopItem }) => (
-    <View
-      style={[styles.card, { flex: 1 }, !matches.has(item.id) && styles.dim, category === item.category && styles.cardOn]}
-    >
-      <Pressable
-        onPress={() => open(item)}
-        accessibilityRole="button"
-        accessibilityLabel={`Open product: ${item.name}`}
-        style={styles.squareImgWrap}
-      >
-        <Image source={item.source} style={IMG_FILL} resizeMode="cover" />
-      </Pressable>
-      <Heart on={isFav(item)} onPress={() => toggleFavorite(item.id)} />
-      <View style={styles.squareBody}>
-        <AppText variant="subheading" color={DARK} numberOfLines={1}>
-          {item.name}
-        </AppText>
-        <Text style={styles.tags} numberOfLines={1}>
-          {item.tags}
-        </Text>
-        <View style={styles.priceRow}>
-          <Text style={styles.price}>{formatRwf(item.priceRwf)}</Text>
-          <Rating item={item} />
-        </View>
-        <AddButton onPress={() => add(item)} name={item.name} />
-      </View>
-    </View>
-  );
 
   return (
     <View style={styles.root}>
@@ -226,8 +234,24 @@ export default function ShopScreen() {
       {/* Products: two cards, then one wide card. Always fills the screen. */}
       <View style={styles.grid}>
         <View style={[styles.gridRow, { flex: 1.3 }]}>
-          <SquareCard item={tshirt} />
-          <SquareCard item={bracelet} />
+          <SquareCard
+            item={tshirt}
+            highlighted={category === tshirt.category}
+            dimmed={!matches.has(tshirt.id)}
+            isFav={data.favorites.includes(tshirt.id)}
+            onOpen={() => open(tshirt)}
+            onFav={() => toggleFavorite(tshirt.id)}
+            onAdd={() => add(tshirt)}
+          />
+          <SquareCard
+            item={bracelet}
+            highlighted={category === bracelet.category}
+            dimmed={!matches.has(bracelet.id)}
+            isFav={data.favorites.includes(bracelet.id)}
+            onOpen={() => open(bracelet)}
+            onFav={() => toggleFavorite(bracelet.id)}
+            onAdd={() => add(bracelet)}
+          />
         </View>
 
         <View

@@ -8,7 +8,6 @@ import { SmartImage } from '../components/SmartImage';
 import { AppText } from '../components/AppText';
 import { Button } from '../components/Button';
 import { IconButton } from '../components/ScreenHeader';
-import { DemoNotice } from '../components/DemoBadge';
 import { EmptyState, LoadingState } from '../components/StateViews';
 import { Screen } from '../components/Screen';
 import { colors, radius } from '../theme';
@@ -66,7 +65,6 @@ export default function EventDetailsScreen() {
           <AppText variant="body" style={{ marginVertical: 16 }}>
             {e.description}
           </AppText>
-          {e.isDemo && <DemoNotice>Demo event. Nothing here is a real listing, and no tickets or bookings are available.</DemoNotice>}
           <Button
             title="Back to events"
             variant="secondary"

@@ -4,7 +4,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SmartImage } from './SmartImage';
 import { AppText } from './AppText';
-import { DemoBadge } from './DemoBadge';
 import { colors, radius, shadow } from '../theme';
 import type { Story } from '../types';
 
@@ -36,7 +35,7 @@ export function StoryCard({ story, bookmarked, onToggleBookmark, onPress, varian
           />
         </SmartImage>
 
-        <View style={styles.top}>{story.isDemo ? <DemoBadge /> : <View />}</View>
+        <View style={styles.top}><View /></View>
 
         <View style={styles.bottom}>
           <AppText variant={compact ? 'subheading' : 'heading'} color={colors.white} numberOfLines={2}>

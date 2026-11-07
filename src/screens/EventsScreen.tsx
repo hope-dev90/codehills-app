@@ -1,9 +1,8 @@
 import React from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet } from 'react-native';
 import { Screen } from '../components/Screen';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { EventCard } from '../components/EventCard';
-import { DemoNotice } from '../components/DemoBadge';
 import { EmptyState, ErrorState, LoadingState } from '../components/StateViews';
 import { useRootNav } from '../hooks/useRootNav';
 import { useEvents } from '../hooks/useResource';
@@ -31,11 +30,6 @@ export default function EventsScreen() {
           keyExtractor={(e) => e.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
-          ListHeaderComponent={
-            <View style={{ marginBottom: 14 }}>
-              <DemoNotice>These are sample events for demonstration. Real events and dates will come from the CodeHills backend.</DemoNotice>
-            </View>
-          }
           renderItem={({ item }) => (
             <EventCard event={item} onPress={() => navigation.navigate('EventDetails', { eventId: item.id })} />
           )}

@@ -16,6 +16,7 @@ import { useRootNav } from '../hooks/useRootNav';
 import { useApp } from '../hooks/AppContext';
 import { useToast } from '../hooks/ToastContext';
 import { validateRequired } from '../utils/validation';
+import { generateBusinessPlan } from '../services/gemini';
 import type { RootStackParamList } from '../navigation/types';
 
 const TOTAL = 3;
@@ -27,6 +28,7 @@ export default function CreateBusinessScreen() {
   const { params } = useRoute<RouteProp<RootStackParamList, 'CreateBusiness'>>();
   const { data, saveBusiness } = useApp();
   const editing = params?.mode === 'edit' && !!data.business;
+  const incomingMaterials = params?.materials ?? [];
 
   const [step, setStep] = useState(1);
   const [name, setName] = useState(editing ? data.business!.name : '');
@@ -34,6 +36,30 @@ export default function CreateBusinessScreen() {
   const [description, setDescription] = useState(editing ? data.business!.description : '');
   const [imageUri, setImageUri] = useState<string | undefined>(editing ? data.business!.imageUri : undefined);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
+  const [generating, setGenerating] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!category) {
+      toast('Choose a category first so the AI can tailor the description');
+      return;
+    }
+    setGenerating(true);
+    try {
+      const result = await generateBusinessPlan(
+        incomingMaterials.length > 0 ? incomingMaterials : ['local materials'],
+        category,
+        name,
+      );
+      setDescription(result);
+    } catch (e: unknown) {
+      Alert.alert(
+        'Could not generate description',
+        e instanceof Error ? e.message : 'Please check your internet connection and try again.',
+      );
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const validateStep1 = () => {
     const next = {
@@ -109,7 +135,32 @@ export default function CreateBusinessScreen() {
                   {errors.category}
                 </AppText>
               ) : null}
-              <TextField label="Brief description" placeholder="What do you make or offer?" value={description} onChangeText={setDescription} multiline error={errors.description} />
+              {incomingMaterials.length > 0 && (
+                <View style={styles.materialsRow}>
+                  <Ionicons name="leaf-outline" size={14} color={colors.caramel} />
+                  <AppText variant="caption" color={colors.muted} style={styles.materialsText}>
+                    Using: {incomingMaterials.join(', ')}
+                  </AppText>
+                </View>
+              )}
+              <View style={styles.descHeader}>
+                <AppText variant="caption" color={colors.muted}>
+                  Brief description
+                </AppText>
+                <Pressable
+                  onPress={handleGenerate}
+                  disabled={generating}
+                  accessibilityRole="button"
+                  accessibilityLabel="Generate description with AI"
+                  style={[styles.aiBtn, generating && styles.aiBtnDisabled]}
+                >
+                  <Ionicons name="sparkles-outline" size={14} color={generating ? colors.muted : colors.caramel} />
+                  <AppText variant="caption" color={generating ? colors.muted : colors.caramel} style={styles.aiBtnText}>
+                    {generating ? 'Generating…' : 'Generate with AI'}
+                  </AppText>
+                </Pressable>
+              </View>
+              <TextField placeholder="What do you make or offer?" value={description} onChangeText={setDescription} multiline error={errors.description} />
             </>
           )}
 
@@ -144,9 +195,6 @@ export default function CreateBusinessScreen() {
               <AppText variant="body" color={colors.muted}>
                 {description.trim()}
               </AppText>
-              <AppText variant="caption" color={colors.muted} style={{ marginTop: 14 }}>
-                Saved on this device only. Publishing to CodeHills needs the business backend, which is not connected yet.
-              </AppText>
             </View>
           )}
 
@@ -170,6 +218,12 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingBottom: 24 },
   label: { marginBottom: 8, marginLeft: 4 },
   cats: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
+  materialsRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12, marginLeft: 2 },
+  materialsText: { flex: 1 },
+  descHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, marginHorizontal: 4 },
+  aiBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: colors.caramel, backgroundColor: 'rgba(168,117,66,0.08)' },
+  aiBtnDisabled: { borderColor: colors.border, backgroundColor: 'transparent' },
+  aiBtnText: { fontFamily: 'Manrope_600SemiBold' },
   picker: { height: 220, borderRadius: radius.lg, overflow: 'hidden', borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.caramel, backgroundColor: colors.white, marginBottom: 10 },
   pickerEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   review: { backgroundColor: colors.white, borderRadius: radius.lg, padding: 16 },
