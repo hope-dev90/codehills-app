@@ -11,6 +11,9 @@ import { loadAppData, saveAppData, defaultAppData, clearAppData } from '../servi
 import { authService, httpAuth } from '../services/auth';
 import { orderService, fetchOrders } from '../services/orders';
 import { config } from '../services/config';
+import { tokenStorage } from '../services/tokenStorage';
+import { setAuthExpiredHandler } from '../services/apiClient';
+import { navigationRef } from '../navigation/navigationRef';
 import {
   syncFavorite,
   syncBookmark,
@@ -102,10 +105,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       // "Remember me" off: the session does not survive an app restart.
       let initial = stored.preferences.rememberMe ? stored : { ...stored, user: null };
 
-      // Try to restore session via refresh token
-      if (!config.useMockData && !initial.user) {
-        const restored = await httpAuth.refreshSession().catch(() => null);
-        if (restored) initial = { ...initial, user: restored };
+      if (!config.useMockData) {
+        if (initial.user) {
+          // A persisted user alone can go stale — the stored tokens may have been
+          // cleared after a failed refresh, or the refresh token rotated/revoked.
+          // Without a refresh token the session can never be renewed, so treat the
+          // user as logged out instead of leaving them in a 401-on-every-call state.
+          const refreshToken = await tokenStorage.getRefreshToken();
+          if (!refreshToken) initial = { ...initial, user: null };
+        } else {
+          // Try to restore the session via the refresh token.
+          const restored = await httpAuth.refreshSession().catch(() => null);
+          if (restored) initial = { ...initial, user: restored };
+        }
       }
 
       if (!active) return;
@@ -122,6 +134,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [data]);
 
   const update = useCallback((fn: (prev: AppData) => AppData) => setData((prev) => fn(prev)), []);
+
+  // ── Session expiry: reset to the login screen when a token can't be renewed ──
+  useEffect(() => {
+    if (config.useMockData) return;
+    setAuthExpiredHandler(() => {
+      update((p) => ({
+        ...defaultAppData,
+        preferences: p.preferences,
+        rememberedContact: p.rememberedContact,
+      }));
+      if (navigationRef.isReady()) {
+        navigationRef.reset({ index: 0, routes: [{ name: 'Landing' }] });
+      }
+    });
+    return () => setAuthExpiredHandler(null);
+  }, [update]);
 
   // ── Auth ─────────────────────────────────────────────────────────────────────
 

@@ -37,6 +37,7 @@ export default function CreateBusinessScreen() {
   const [imageUri, setImageUri] = useState<string | undefined>(editing ? data.business!.imageUri : undefined);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [generating, setGenerating] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const handleGenerate = async () => {
     if (!category) {
@@ -124,21 +125,33 @@ export default function CreateBusinessScreen() {
     setStep((s) => Math.min(TOTAL, s + 1));
   };
 
-  const save = () => {
+  const save = async () => {
     if (!validateStep1()) {
       setStep(1);
       return;
     }
-    saveBusiness({ name, category, description, imageUri });
-    toast(editing ? 'Business updated' : 'Business saved');
-    navigation.replace('BusinessDashboard');
+    // Wait for the server to persist the business before navigating, otherwise the
+    // dashboard mounts before the save finishes and shows the empty state.
+    setSaving(true);
+    try {
+      await saveBusiness({ name, category, description, imageUri });
+      toast(editing ? 'Business updated' : 'Generating your business plan…');
+      navigation.replace('BusinessDashboard');
+    } catch (e: unknown) {
+      Alert.alert(
+        'Could not save your business',
+        e instanceof Error ? e.message : 'Please check your internet connection and try again.',
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <Screen padBottom>
       <ScreenHeader
         title={editing ? 'Edit Business' : 'Create Your Business'}
-        subtitle={step === 1 ? 'Tell us about your idea' : step === 2 ? 'Add an image (optional)' : 'Review and save'}
+        subtitle={step === 1 ? 'Tell us about your idea' : step === 2 ? 'Add an image (optional)' : 'Review and generate your plan'}
         showBack
         onBack={() => (step > 1 ? setStep((s) => s - 1) : navigation.goBack())}
       />
@@ -241,7 +254,7 @@ export default function CreateBusinessScreen() {
                 onPress={next}
               />
             ) : (
-              <Button title={editing ? 'Save changes' : 'Save business'} icon="checkmark" onPress={save} />
+              <Button title={editing ? 'Save changes' : 'Generate business plan'} icon="sparkles" loading={saving} onPress={save} />
             )}
           </View>
         </ScrollView>

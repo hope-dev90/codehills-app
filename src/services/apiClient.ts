@@ -31,6 +31,21 @@ export class ApiError extends Error {
 
 let refreshPromise: Promise<string | null> | null = null;
 
+// ─── Session-expiry hook ─────────────────────────────────────────────────────
+
+type AuthExpiredHandler = () => void;
+
+let authExpiredHandler: AuthExpiredHandler | null = null;
+
+/**
+ * Registers a callback fired when a request fails auth and the token cannot be
+ * refreshed. Lets the app clear the local session and return to the login screen
+ * instead of leaving the user in a "logged in but every request 401s" state.
+ */
+export function setAuthExpiredHandler(handler: AuthExpiredHandler | null): void {
+  authExpiredHandler = handler;
+}
+
 // ─── Token refresh ───────────────────────────────────────────────────────────
 
 async function performRefresh(): Promise<string | null> {
@@ -115,6 +130,7 @@ export async function apiFetch<T = unknown>(
     }
     // refresh failed — clear tokens so the app can prompt re-login
     await tokenStorage.clearTokens();
+    authExpiredHandler?.();
     throw new ApiError(401, 'UNAUTHORIZED', 'Your session has expired. Please log in again.');
   }
 

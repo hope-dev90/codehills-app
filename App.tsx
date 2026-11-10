@@ -14,6 +14,7 @@ import {
 import { AppProvider, useApp } from './src/hooks/AppContext';
 import { ToastProvider } from './src/hooks/ToastContext';
 import RootNavigator from './src/navigation/RootNavigator';
+import { navigationRef } from './src/navigation/navigationRef';
 import { colors } from './src/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -48,7 +49,7 @@ function Root() {
   if (!appReady) return null;
 
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer ref={navigationRef} theme={navTheme}>
       <RootNavigator signedIn={!!data.user} />
     </NavigationContainer>
   );

@@ -58,7 +58,15 @@ export async function fetchBusiness(): Promise<BusinessProfile | null> {
 export async function saveBusiness(
   input: Pick<BusinessProfile, 'name' | 'category' | 'description' | 'imageUri'>,
 ): Promise<BusinessProfile> {
-  const body = { name: input.name, category: input.category, description: input.description, imageUrl: input.imageUri ?? null };
+  const body = {
+    name: input.name,
+    category: input.category,
+    description: input.description,
+    // Only forward a hosted URL. Images picked on the device are data:/blob:/file:
+    // URIs that aren't uploaded anywhere; sending one as imageUrl can be several
+    // megabytes and makes the API reject the save.
+    imageUrl: input.imageUri && /^https?:\/\//i.test(input.imageUri) ? input.imageUri : null,
+  };
   return mapBusiness(await api.put<ApiBusiness>('/business', body));
 }
 

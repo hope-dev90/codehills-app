@@ -25,7 +25,7 @@ export const mockProducts: Product[] = [
     artisan: { name: 'Sample Artisan Cooperative', location: 'Rwanda (demo)' },
     sellerName: 'Sample Artisan Cooperative',
     isActive: true,
-    rewardStoryId: 'card-1',
+    rewardStoryId: 'gihanga-ngomijana',
     isDemo: true,
   },
   {
@@ -46,7 +46,7 @@ export const mockProducts: Product[] = [
     artisan: { name: 'Sample Coffee Growers', location: 'Rwanda (demo)' },
     sellerName: 'Sample Coffee Growers',
     isActive: true,
-    rewardStoryId: 'card-2',
+    rewardStoryId: 'ruganzu-ii-ndoli',
     isDemo: true,
   },
   {
@@ -67,7 +67,7 @@ export const mockProducts: Product[] = [
     artisan: { name: 'Sample Weavers Group', location: 'Rwanda (demo)' },
     sellerName: 'Sample Weavers Group',
     isActive: true,
-    rewardStoryId: 'card-3',
+    rewardStoryId: 'inanga-mazimpaka',
     isDemo: true,
   },
   {
@@ -88,7 +88,7 @@ export const mockProducts: Product[] = [
     artisan: { name: 'Sample Beekeepers', location: 'Rwanda (demo)' },
     sellerName: 'Sample Beekeepers',
     isActive: true,
-    rewardStoryId: 'card-1',
+    rewardStoryId: 'gihanga-ngomijana',
     isDemo: true,
   },
   {
@@ -109,7 +109,7 @@ export const mockProducts: Product[] = [
     artisan: { name: 'Sample Tea Growers', location: 'Rwanda (demo)' },
     sellerName: 'Sample Tea Growers',
     isActive: true,
-    rewardStoryId: 'card-2',
+    rewardStoryId: 'ruganzu-ii-ndoli',
     isDemo: true,
   },
   // Featured in the Shop tab; the ids match the tiles in src/screens/ShopScreen.tsx.
@@ -131,7 +131,7 @@ export const mockProducts: Product[] = [
     artisan: { name: 'Sample Textile Workshop', location: 'Rwanda (demo)' },
     sellerName: 'Sample Textile Workshop',
     isActive: true,
-    rewardStoryId: 'card-3',
+    rewardStoryId: 'inanga-mazimpaka',
     isDemo: true,
   },
   {
@@ -152,7 +152,7 @@ export const mockProducts: Product[] = [
     artisan: { name: 'Sample Beadwork Group', location: 'Rwanda (demo)' },
     sellerName: 'Sample Beadwork Group',
     isActive: true,
-    rewardStoryId: 'card-1',
+    rewardStoryId: 'gihanga-ngomijana',
     isDemo: true,
   },
   {
@@ -173,7 +173,7 @@ export const mockProducts: Product[] = [
     artisan: { name: 'Sample Woodcraft Studio', location: 'Rwanda (demo)' },
     sellerName: 'Sample Woodcraft Studio',
     isActive: true,
-    rewardStoryId: 'card-2',
+    rewardStoryId: 'ruganzu-ii-ndoli',
     isDemo: true,
   },
 ];

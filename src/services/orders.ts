@@ -111,18 +111,30 @@ const localOrderService: OrderService = {
   },
 };
 
-export const orderService: OrderService = config.useMockData
-  ? localOrderService
-  : httpOrderService;
+export const orderService: OrderService = {
+  async createOrder(input) {
+    // Try the backend first; fall back to local demo creation so orders
+    // always save even when the server is unreachable.
+    if (!config.useMockData) {
+      try {
+        return await httpOrderService.createOrder(input);
+      } catch {
+        // Backend down — continue to local fallback below.
+      }
+    }
+    return localOrderService.createOrder(input);
+  },
+};
 
 // ─── Order history (HTTP only) ────────────────────────────────────────────────
 
 export async function fetchOrders(): Promise<Order[]> {
   if (config.useMockData) return [];
-  try {
-    const res = await api.get<{ items: ApiOrder[]; total: number }>('/orders');
-    return res.items.map(mapOrder);
-  } catch { return []; }
+  // Let errors propagate — hydrateUserData uses Promise.allSettled, so a
+  // rejected promise keeps the local orders instead of overwriting them
+  // with an empty array.
+  const res = await api.get<{ items: ApiOrder[]; total: number }>('/orders');
+  return res.items.map(mapOrder);
 }
 
 export async function fetchOrder(id: string): Promise<Order | null> {
