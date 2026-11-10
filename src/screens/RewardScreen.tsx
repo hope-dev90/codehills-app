@@ -184,8 +184,8 @@ const styles = StyleSheet.create({
 
   progress: { marginVertical: 22 },
   progressRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  progressLabel: { fontFamily: 'Manrope_500Medium', fontSize: 13, color: 'rgba(255,255,255,0.9)' },
-  progressValue: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: colors.ochre },
+  progressLabel: { fontFamily: 'Outfit_500Medium', fontSize: 13, color: 'rgba(255,255,255,0.9)' },
+  progressValue: { fontFamily: 'Outfit_700Bold', fontSize: 13, color: colors.ochre },
   track: { height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.28)', marginTop: 8, overflow: 'hidden' },
   fill: { height: 8, borderRadius: 4, backgroundColor: colors.ochre },
 
@@ -202,5 +202,5 @@ const styles = StyleSheet.create({
     borderColor: colors.ochre,
   },
   darkBtnFilled: { backgroundColor: CREAM },
-  darkBtnText: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: CREAM },
+  darkBtnText: { fontFamily: 'Outfit_700Bold', fontSize: 15, color: CREAM },
 });

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useReducer, useState } from 'react';
+import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,235 +17,35 @@ import { useApp } from '../hooks/AppContext';
 import { useLearningResources } from '../hooks/useResource';
 import { formatRwf } from '../utils/format';
 import { hasErrors, validatePositiveNumber, validateRequired } from '../utils/validation';
+import {
+  generateBusinessModel,
+  generateBusinessPlan,
+  isGeminiConfigured,
+  type BusinessModelCanvas,
+  type BusinessPlan,
+} from '../services/gemini';
 import type { RootStackParamList } from '../navigation/types';
 
 /* -------------------------------------------------------------------------- */
-/* Gemini                                                                      */
+/* Async AI state                                                              */
 /* -------------------------------------------------------------------------- */
 
-const GEMINI_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-const GEMINI_MODEL = process.env.EXPO_PUBLIC_GEMINI_MODEL || 'gemini-2.5-flash';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
-const TIMEOUT_MS = 45000;
-
-type PlanState =
+type AsyncState<T> =
   | { status: 'idle' }
   | { status: 'loading' }
-  | { status: 'success'; plan: BusinessPlan }
+  | { status: 'success'; data: T }
   | { status: 'error'; message: string };
 
-type PlanAction =
-  | { type: 'FETCH_START' }
-  | { type: 'FETCH_SUCCESS'; plan: BusinessPlan }
-  | { type: 'FETCH_ERROR'; message: string };
+type AsyncAction<T> =
+  | { type: 'START' }
+  | { type: 'SUCCESS'; data: T }
+  | { type: 'ERROR'; message: string };
 
-function planReducer(_: PlanState, action: PlanAction): PlanState {
+function asyncReducer<T>(_: AsyncState<T>, action: AsyncAction<T>): AsyncState<T> {
   switch (action.type) {
-    case 'FETCH_START': return { status: 'loading' };
-    case 'FETCH_SUCCESS': return { status: 'success', plan: action.plan };
-    case 'FETCH_ERROR': return { status: 'error', message: action.message };
-  }
-}
-
-type BusinessPlan = {
-  summary: string;
-  targetCustomers: string[];
-  valueProposition: string;
-  rawMaterials: { name: string; sourcing: string }[];
-  productIdeas: { name: string; description: string; priceRwf: number }[];
-  startupCosts: { item: string; costRwf: number }[];
-  marketing: string[];
-  operations: string[];
-  risks: string[];
-  nextSteps: string[];
-};
-
-type PlanInput = {
-  name: string;
-  category: string;
-  description: string;
-  materials: string[];
-};
-
-function buildPrompt(input: PlanInput) {
-  return `You are a business advisor for small entrepreneurs in Rwanda.
-
-Write a practical, realistic starter business plan for this business. Use Rwandan francs (RWF) for every amount, keep it simple and specific to Rwanda, and keep each text item to one or two short sentences.
-
-Business name: ${input.name}
-Category: ${input.category}
-Description: ${input.description}
-Raw materials the owner wants to use: ${input.materials.length ? input.materials.join(', ') : 'not specified'}
-
-Reply with ONLY a JSON object in exactly this shape:
-{
-  "summary": string,
-  "targetCustomers": string[],
-  "valueProposition": string,
-  "rawMaterials": [{ "name": string, "sourcing": string }],
-  "productIdeas": [{ "name": string, "description": string, "priceRwf": number }],
-  "startupCosts": [{ "item": string, "costRwf": number }],
-  "marketing": string[],
-  "operations": string[],
-  "risks": string[],
-  "nextSteps": string[]
-}
-
-Give 3 to 5 items in each list.`;
-}
-
-const asStrings = (v: unknown): string[] =>
-  Array.isArray(v) ? v.map((x) => String(x)).filter(Boolean) : [];
-
-function parsePlan(raw: string): BusinessPlan {
-  const cleaned = raw.replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
-  const j = JSON.parse(cleaned);
-  const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
-  return {
-    summary: String(j.summary ?? ''),
-    targetCustomers: asStrings(j.targetCustomers),
-    valueProposition: String(j.valueProposition ?? ''),
-    rawMaterials: list(j.rawMaterials).map((m) => ({
-      name: String((m as { name?: unknown })?.name ?? ''),
-      sourcing: String((m as { sourcing?: unknown })?.sourcing ?? ''),
-    })),
-    productIdeas: list(j.productIdeas).map((p) => ({
-      name: String((p as { name?: unknown })?.name ?? ''),
-      description: String((p as { description?: unknown })?.description ?? ''),
-      priceRwf: Math.round(Number((p as { priceRwf?: unknown })?.priceRwf) || 0),
-    })),
-    startupCosts: list(j.startupCosts).map((c) => ({
-      item: String((c as { item?: unknown })?.item ?? ''),
-      costRwf: Math.round(Number((c as { costRwf?: unknown })?.costRwf) || 0),
-    })),
-    marketing: asStrings(j.marketing),
-    operations: asStrings(j.operations),
-    risks: asStrings(j.risks),
-    nextSteps: asStrings(j.nextSteps),
-  };
-}
-
-/** Hardcoded demo plan returned when no Gemini API key is configured. */
-function demoPlan(input: PlanInput): BusinessPlan {
-  const name = input.name || 'Your Business';
-  const mats = input.materials.length ? input.materials : ['local Rwandan materials'];
-  return {
-    summary:
-      `${name} is a ${input.category} business in Rwanda that transforms ${mats.join(', ')} ` +
-      `into premium products for local and export markets. ` +
-      `Rooted in Rwandan heritage, it combines quality craftsmanship with sustainable sourcing.`,
-    targetCustomers: [
-      'Local households and markets in Kigali and nearby towns',
-      'Hotels and restaurants seeking locally produced goods',
-      'Export buyers and diaspora customers interested in Rwandan products',
-      'NGOs and cooperatives supporting Rwandan smallholder farmers',
-    ],
-    valueProposition:
-      `${name} offers authentic, traceable Rwandan products made from the finest local raw materials, ` +
-      `giving customers quality they can trust and a story they can share.`,
-    rawMaterials: mats.slice(0, 5).map((m) => ({
-      name: m,
-      sourcing: `Source directly from local cooperatives and farmers in the surrounding provinces.`,
-    })),
-    productIdeas: [
-      { name: `Premium ${mats[0]} Pack`, description: 'Packaged for retail sale in supermarkets and online.', priceRwf: 8000 },
-      { name: `${mats[0]} Gift Set`, description: 'Curated gift box targeted at hotels and tourist shops.', priceRwf: 25000 },
-      { name: `Artisan ${mats[0]} Collection`, description: 'Small-batch, handcrafted product for export and premium buyers.', priceRwf: 45000 },
-      { name: 'Wholesale Bulk Supply', description: 'Bulk orders for restaurants, caterers, and distributors.', priceRwf: 150000 },
-    ],
-    startupCosts: [
-      { item: 'Initial raw material stock', costRwf: 200000 },
-      { item: 'Basic processing and packaging equipment', costRwf: 350000 },
-      { item: 'Business registration and licenses', costRwf: 80000 },
-      { item: 'Branding, labels and marketing materials', costRwf: 60000 },
-      { item: 'First month operational costs (transport, phone, etc.)', costRwf: 50000 },
-    ],
-    marketing: [
-      'Create a WhatsApp Business profile and share products with local groups.',
-      'Sell at local markets (Kimironko, Nyabugogo) on weekends to build awareness.',
-      'Partner with hotels and guesthouses in Kigali to supply directly.',
-      'Use Instagram and Facebook to post product photos and customer stories.',
-      'Offer free samples to key decision-makers and cooperatives.',
-    ],
-    operations: [
-      'Source raw materials weekly from trusted local farmers and cooperatives.',
-      'Process and package products in a clean, dedicated workspace.',
-      'Keep a simple stock register to track inventory and sales.',
-      'Deliver orders within 24–48 hours using moto delivery in Kigali.',
-      'Review pricing and stock every month and adjust based on demand.',
-    ],
-    risks: [
-      'Seasonal supply fluctuations — build a small buffer stock during harvest season.',
-      'Price competition from established brands — differentiate with quality and story.',
-      'Cash flow gaps between purchasing materials and receiving payment — negotiate credit terms.',
-      'Quality inconsistency — establish clear supplier standards and inspect every batch.',
-    ],
-    nextSteps: [
-      `Register your business with RDB (Rwanda Development Board) online at rdb.rw.`,
-      'Open a dedicated business bank account to separate personal and business funds.',
-      `Place your first small test order of ${mats[0]} and produce a sample batch.`,
-      'Get feedback from five potential customers before scaling up production.',
-      'Apply for a small business loan or grant from BRD or a local microfinance institution.',
-    ],
-  };
-}
-
-async function fetchBusinessPlan(input: PlanInput, signal: AbortSignal): Promise<BusinessPlan> {
-  if (!GEMINI_KEY) {
-    // No API key yet — return a realistic hardcoded plan so the UI works end-to-end.
-    return demoPlan(input);
-  }
-
-  const ctl = new AbortController();
-  let timedOut = false;
-  const timer = setTimeout(() => {
-    timedOut = true;
-    ctl.abort();
-  }, TIMEOUT_MS);
-
-  const onAbort = () => ctl.abort();
-  signal.addEventListener('abort', onAbort);
-
-  try {
-    const res = await fetch(`${GEMINI_URL}?key=${GEMINI_KEY}`, {
-      method: 'POST',
-      signal: ctl.signal,
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_KEY },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: buildPrompt(input) }] }],
-        generationConfig: { temperature: 0.7, responseMimeType: 'application/json' },
-      }),
-    });
-
-    if (!res.ok) {
-      let detail = '';
-      try {
-        const body = await res.json();
-        detail = (body as { error?: { message?: string } })?.error?.message ?? '';
-      } catch { /* ignore */ }
-      throw new Error(detail || `Gemini request failed (${res.status}).`);
-    }
-
-    const body = await res.json();
-    const text: string | undefined = (
-      body as { candidates?: { content?: { parts?: { text?: string }[] } }[] }
-    )?.candidates?.[0]?.content?.parts
-      ?.map((p: { text?: string }) => p.text ?? '')
-      .join('');
-
-    if (!text) throw new Error('Gemini returned an empty answer. Please try again.');
-
-    try {
-      return parsePlan(text);
-    } catch {
-      throw new Error('Could not read the business plan from Gemini. Please try again.');
-    }
-  } catch (e: unknown) {
-    if (timedOut) throw new Error('Gemini took too long to respond. Check your connection and try again.');
-    throw e;
-  } finally {
-    clearTimeout(timer);
-    signal.removeEventListener('abort', onAbort);
+    case 'START': return { status: 'loading' };
+    case 'SUCCESS': return { status: 'success', data: action.data };
+    case 'ERROR': return { status: 'error', message: action.message };
   }
 }
 
@@ -253,16 +53,17 @@ async function fetchBusinessPlan(input: PlanInput, signal: AbortSignal): Promise
 /* Screen                                                                      */
 /* -------------------------------------------------------------------------- */
 
-type Tab = 'plan' | 'products' | 'orders' | 'learning';
+type Tab = 'plan' | 'model' | 'products' | 'orders' | 'learning';
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'plan', label: 'Business Plan' },
+  { id: 'model', label: 'Business Model' },
   { id: 'products', label: 'Products' },
   { id: 'orders', label: 'Orders' },
   { id: 'learning', label: 'Learning' },
 ];
 
-/** Screen 15: business profile with an AI-generated business plan, products, demo orders and learning. */
+/** Screen 15: business profile with an AI-generated plan and business model, products, orders and learning. */
 export default function BusinessDashboardScreen() {
   const navigation = useRootNav();
   const { params } = useRoute<RouteProp<RootStackParamList, 'BusinessDashboard'>>();
@@ -279,26 +80,60 @@ export default function BusinessDashboardScreen() {
   const [pName, setPName] = useState('');
   const [pPrice, setPPrice] = useState('');
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
-  const [planState, dispatch] = useReducer(planReducer, { status: 'idle' });
-  const [attempt, setAttempt] = useState(0);
+
+  const [planState, planDispatch] = useReducer(
+    asyncReducer<BusinessPlan>,
+    { status: 'idle' } as AsyncState<BusinessPlan>,
+  );
+  const [planAttempt, setPlanAttempt] = useState(0);
+
+  const [modelState, modelDispatch] = useReducer(
+    asyncReducer<BusinessModelCanvas>,
+    { status: 'idle' } as AsyncState<BusinessModelCanvas>,
+  );
+  const [modelAttempt, setModelAttempt] = useState(0);
+  /** Key of the last model request, so switching tabs does not re-generate it. */
+  const modelLoadedKey = useRef<string | null>(null);
 
   const business = data.business;
 
+  // Generate the business plan as soon as we know the business.
   useEffect(() => {
     if (!business) return;
     const controller = new AbortController();
-    dispatch({ type: 'FETCH_START' });
-    fetchBusinessPlan(
+    planDispatch({ type: 'START' });
+    generateBusinessPlan(
       { name: business.name, category: business.category, description: business.description, materials },
-      controller.signal,
+      { signal: controller.signal },
     )
-      .then((p) => { if (!controller.signal.aborted) dispatch({ type: 'FETCH_SUCCESS', plan: p }); })
+      .then((p) => { if (!controller.signal.aborted) planDispatch({ type: 'SUCCESS', data: p }); })
       .catch((e: Error) => {
-        if (!controller.signal.aborted) dispatch({ type: 'FETCH_ERROR', message: e.message || 'Something went wrong.' });
+        if (!controller.signal.aborted) planDispatch({ type: 'ERROR', message: e.message || 'Something went wrong.' });
       });
     return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [business?.name, business?.category, business?.description, materialsKey, attempt]);
+  }, [business?.name, business?.category, business?.description, materialsKey, planAttempt]);
+
+  // Generate the business model lazily, the first time its tab is opened.
+  useEffect(() => {
+    if (!business || tab !== 'model') return;
+    const key = `${business.name}|${business.category}|${business.description}|${materialsKey}|${modelAttempt}`;
+    if (modelLoadedKey.current === key) return;
+    modelLoadedKey.current = key;
+
+    const controller = new AbortController();
+    modelDispatch({ type: 'START' });
+    generateBusinessModel(
+      { name: business.name, category: business.category, description: business.description, materials },
+      { signal: controller.signal },
+    )
+      .then((m) => { if (!controller.signal.aborted) modelDispatch({ type: 'SUCCESS', data: m }); })
+      .catch((e: Error) => {
+        if (!controller.signal.aborted) modelDispatch({ type: 'ERROR', message: e.message || 'Something went wrong.' });
+      });
+    return () => controller.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, business?.name, business?.category, business?.description, materialsKey, modelAttempt]);
 
   if (!business) {
     return (
@@ -395,11 +230,39 @@ export default function BusinessDashboardScreen() {
                 <AppText variant="small" color={colors.muted} style={[styles.center, { marginBottom: 14 }]}>
                   {planState.message}
                 </AppText>
-                <Button title="Try again" icon="refresh" variant="secondary" onPress={() => setAttempt((a) => a + 1)} />
+                <Button title="Try again" icon="refresh" variant="secondary" onPress={() => setPlanAttempt((a) => a + 1)} />
               </View>
             )}
             {planState.status === 'success' && (
-              <PlanView plan={planState.plan} onAddProduct={addIdeaAsProduct} onRegenerate={() => setAttempt((a) => a + 1)} />
+              <PlanView plan={planState.data} onAddProduct={addIdeaAsProduct} onRegenerate={() => setPlanAttempt((a) => a + 1)} />
+            )}
+          </View>
+        )}
+
+        {/* Business model */}
+        {tab === 'model' && (
+          <View>
+            {modelState.status === 'loading' && (
+              <View style={styles.stateBox}>
+                <ActivityIndicator size="large" color={colors.caramel} />
+                <AppText variant="subheading" style={{ marginTop: 14 }}>Mapping your business model...</AppText>
+                <AppText variant="small" color={colors.muted} style={styles.center}>
+                  Gemini is describing how your business creates, delivers and captures value.
+                </AppText>
+              </View>
+            )}
+            {modelState.status === 'error' && (
+              <View style={styles.stateBox}>
+                <Ionicons name="alert-circle-outline" size={34} color={colors.danger} />
+                <AppText variant="subheading" style={{ marginTop: 10 }}>Could not build the model</AppText>
+                <AppText variant="small" color={colors.muted} style={[styles.center, { marginBottom: 14 }]}>
+                  {modelState.message}
+                </AppText>
+                <Button title="Try again" icon="refresh" variant="secondary" onPress={() => setModelAttempt((a) => a + 1)} />
+              </View>
+            )}
+            {modelState.status === 'success' && (
+              <ModelView model={modelState.data} onRegenerate={() => setModelAttempt((a) => a + 1)} />
             )}
           </View>
         )}
@@ -459,7 +322,7 @@ export default function BusinessDashboardScreen() {
                   <AppText variant="small" color={colors.muted}>{o.item} · {formatRwf(o.totalRwf)}</AppText>
                 </View>
                 <View style={styles.status}>
-                  <AppText variant="caption" color={colors.chocolate} style={{ fontFamily: 'Manrope_700Bold' }}>
+                  <AppText variant="caption" color={colors.chocolate} style={{ fontFamily: 'Outfit_700Bold' }}>
                     {o.status}
                   </AppText>
                 </View>
@@ -515,7 +378,7 @@ function PlanView({
       <View style={styles.hero}>
         <View style={styles.heroTag}>
           <Ionicons name="sparkles" size={13} color={colors.white} />
-          <AppText variant="caption" color={colors.white} style={{ fontFamily: 'Manrope_700Bold' }}>
+          <AppText variant="caption" color={colors.white} style={{ fontFamily: 'Outfit_700Bold' }}>
             Your business plan
           </AppText>
         </View>
@@ -577,7 +440,7 @@ function PlanView({
           {plan.startupCosts.map((c, i) => (
             <View key={`${c.item}-${i}`} style={styles.costRow}>
               <AppText variant="small" style={{ flex: 1 }}>{c.item}</AppText>
-              <AppText variant="small" color={colors.chocolate} style={{ fontFamily: 'Manrope_700Bold' }}>
+              <AppText variant="small" color={colors.chocolate} style={{ fontFamily: 'Outfit_700Bold' }}>
                 {formatRwf(c.costRwf)}
               </AppText>
             </View>
@@ -612,7 +475,7 @@ function PlanView({
           {plan.nextSteps.map((s, i) => (
             <View key={`${s}-${i}`} style={styles.stepRow}>
               <View style={styles.stepNum}>
-                <AppText variant="caption" color={colors.white} style={{ fontFamily: 'Manrope_700Bold' }}>
+                <AppText variant="caption" color={colors.white} style={{ fontFamily: 'Outfit_700Bold' }}>
                   {i + 1}
                 </AppText>
               </View>
@@ -623,11 +486,65 @@ function PlanView({
       )}
 
       <AppText variant="caption" color={colors.muted} style={{ marginTop: 6, marginBottom: 12 }}>
-        {GEMINI_KEY
+        {isGeminiConfigured()
           ? 'Created by Gemini. Amounts are rough estimates — check prices in your local market before spending.'
           : 'Demo plan — add EXPO_PUBLIC_GEMINI_API_KEY to .env for a personalised AI-generated plan.'}
       </AppText>
       <Button title="Regenerate plan" icon="refresh" variant="secondary" onPress={onRegenerate} />
+    </View>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Business model view                                                         */
+/* -------------------------------------------------------------------------- */
+
+const MODEL_BLOCKS: {
+  key: keyof BusinessModelCanvas;
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  title: string;
+}[] = [
+  { key: 'keyPartners', icon: 'people-outline', title: 'Key partners' },
+  { key: 'keyActivities', icon: 'construct-outline', title: 'Key activities' },
+  { key: 'keyResources', icon: 'cube-outline', title: 'Key resources' },
+  { key: 'valuePropositions', icon: 'diamond-outline', title: 'Value propositions' },
+  { key: 'customerRelationships', icon: 'heart-outline', title: 'Customer relationships' },
+  { key: 'channels', icon: 'share-social-outline', title: 'Channels' },
+  { key: 'customerSegments', icon: 'people-circle-outline', title: 'Customer segments' },
+  { key: 'costStructure', icon: 'cash-outline', title: 'Cost structure' },
+  { key: 'revenueStreams', icon: 'trending-up-outline', title: 'Revenue streams' },
+];
+
+function ModelView({ model, onRegenerate }: { model: BusinessModelCanvas; onRegenerate: () => void }) {
+  const blocks = MODEL_BLOCKS.filter((b) => model[b.key].length > 0);
+  const total = blocks.reduce((n, b) => n + model[b.key].length, 0);
+
+  return (
+    <View>
+      <View style={styles.hero}>
+        <View style={styles.heroTag}>
+          <Ionicons name="grid-outline" size={13} color={colors.white} />
+          <AppText variant="caption" color={colors.white} style={{ fontFamily: 'Outfit_700Bold' }}>
+            Your business model
+          </AppText>
+        </View>
+        <AppText variant="body" color={colors.white} style={{ marginTop: 10 }}>
+          The building blocks that show how your business creates, delivers and captures value.
+        </AppText>
+      </View>
+
+      {blocks.map((b) => (
+        <PlanCard key={b.key} icon={b.icon} title={b.title}>
+          <BulletList items={model[b.key]} />
+        </PlanCard>
+      ))}
+
+      <AppText variant="caption" color={colors.muted} style={{ marginTop: 6, marginBottom: 12 }}>
+        {isGeminiConfigured()
+          ? `Created by Gemini across ${total} points — use it as a starting point and adapt it to your market.`
+          : 'Demo model — add EXPO_PUBLIC_GEMINI_API_KEY to .env for a personalised AI-generated model.'}
+      </AppText>
+      <Button title="Regenerate model" icon="refresh" variant="secondary" onPress={onRegenerate} />
     </View>
   );
 }

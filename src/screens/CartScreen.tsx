@@ -325,8 +325,8 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   backBtn: { width: 32, height: 32, justifyContent: 'center', marginRight: 8 },
-  title: { fontFamily: 'Manrope_700Bold', fontSize: 22, lineHeight: 28, color: DARK },
-  subtitle: { fontFamily: 'Manrope_500Medium', fontSize: 12, lineHeight: 16, color: MUTED },
+  title: { fontFamily: 'Outfit_700Bold', fontSize: 22, lineHeight: 28, color: DARK },
+  subtitle: { fontFamily: 'Outfit_500Medium', fontSize: 12, lineHeight: 16, color: MUTED },
 
   page: { flex: 1 },
   list: { flex: 1, paddingHorizontal: 20, paddingTop: 4, paddingBottom: 12 },
@@ -349,8 +349,8 @@ const styles = StyleSheet.create({
   },
   thumbWrap: { borderRadius: 10, overflow: 'hidden', backgroundColor: CREAM },
   itemBody: { flex: 1, marginLeft: 12, justifyContent: 'center' },
-  itemName: { fontFamily: 'Manrope_700Bold', fontSize: 14, lineHeight: 20, color: DARK },
-  itemPrice: { fontFamily: 'Manrope_700Bold', fontSize: 13, lineHeight: 18, color: CARAMEL, marginTop: 2 },
+  itemName: { fontFamily: 'Outfit_700Bold', fontSize: 14, lineHeight: 20, color: DARK },
+  itemPrice: { fontFamily: 'Outfit_700Bold', fontSize: 13, lineHeight: 18, color: CARAMEL, marginTop: 2 },
   stepper: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
   stepBtn: {
     width: 24,
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   qty: {
-    fontFamily: 'Manrope_600SemiBold',
+    fontFamily: 'Outfit_600SemiBold',
     fontSize: 13,
     color: DARK,
     minWidth: 28,
@@ -373,11 +373,11 @@ const styles = StyleSheet.create({
 
   summary: { paddingHorizontal: 2 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6 },
-  rowLabel: { fontFamily: 'Manrope_500Medium', fontSize: 13, color: MUTED },
-  rowValue: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: DARK },
+  rowLabel: { fontFamily: 'Outfit_500Medium', fontSize: 13, color: MUTED },
+  rowValue: { fontFamily: 'Outfit_600SemiBold', fontSize: 13, color: DARK },
   divider: { height: 1, backgroundColor: BORDER, marginVertical: 8 },
-  totalLabel: { fontFamily: 'Manrope_700Bold', fontSize: 16, color: DARK },
-  totalValue: { fontFamily: 'Manrope_800ExtraBold', fontSize: 18, color: DARK },
+  totalLabel: { fontFamily: 'Outfit_700Bold', fontSize: 16, color: DARK },
+  totalValue: { fontFamily: 'Outfit_800ExtraBold', fontSize: 18, color: DARK },
 
   cta: {
     marginTop: 16,
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  ctaText: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: '#FFFFFF' },
+  ctaText: { fontFamily: 'Outfit_700Bold', fontSize: 15, color: '#FFFFFF' },
 
   h: { marginTop: 8, marginBottom: 12 },
   payBox: {

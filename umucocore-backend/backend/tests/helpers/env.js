@@ -9,5 +9,4 @@ process.env.JWT_ACCESS_SECRET = 'test-secret-must-be-at-least-32-chars-long';
 process.env.JWT_ACCESS_EXPIRES_IN = '15m';
 process.env.REFRESH_TOKEN_TTL_DAYS = '7';
 process.env.REFRESH_TOKEN_TTL_DAYS_REMEMBER = '30';
-process.env.CORS_ORIGINS = 'http://localhost:3000';
 process.env.PORT = '0';

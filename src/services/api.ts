@@ -9,7 +9,7 @@
  */
 import { config } from './config';
 import { api } from './apiClient';
-import { mockStories }          from '../data/stories';
+import { mockStories, getStoryById } from '../data/stories';
 import { mockProducts }         from '../data/products';
 import { mockDestinations }     from '../data/destinations';
 import { mockEvents }           from '../data/events';
@@ -156,8 +156,18 @@ const mockContentService: ContentService = {
 
 const httpContentService: ContentService = {
   async getStories() {
-    const res = await api.get<ListResponse<ApiStory>>('/stories?limit=100');
-    return res.items.map(mapStory);
+    // Hardcoded heritage stories always load first; backend CRUD stories
+    // append after (deduped by id). If the backend is unreachable, the
+    // hardcoded stories still show so the tab is never empty.
+    try {
+      const res = await api.get<ListResponse<ApiStory>>('/stories?limit=100');
+      const backend = res.items.map(mapStory);
+      const hardcodedIds = new Set(mockStories.map((s) => s.id));
+      const newBackend = backend.filter((s) => !hardcodedIds.has(s.id));
+      return [...mockStories, ...newBackend];
+    } catch {
+      return mockStories;
+    }
   },
 
   async getProducts() {
@@ -188,10 +198,11 @@ export const contentService: ContentService = config.useMockData
 // ─── Individual item fetchers (used by detail screens) ───────────────────────
 
 export async function fetchStory(id: string): Promise<Story | null> {
-  if (config.useMockData) {
-    const { getStoryById } = await import('../data/stories');
-    return getStoryById(id) ?? null;
-  }
+  // Always check hardcoded stories first so they're available offline and
+  // before any backend call completes.
+  const local = getStoryById(id);
+  if (config.useMockData) return local ?? null;
+  if (local) return local;
   try {
     return mapStory(await api.get<ApiStory>(`/stories/${id}`));
   } catch { return null; }

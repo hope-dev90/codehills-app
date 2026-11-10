@@ -16,7 +16,7 @@ import { useRootNav } from '../hooks/useRootNav';
 import { useApp } from '../hooks/AppContext';
 import { useToast } from '../hooks/ToastContext';
 import { validateRequired } from '../utils/validation';
-import { generateBusinessPlan } from '../services/gemini';
+import { generateBusinessDescription } from '../services/gemini';
 import type { RootStackParamList } from '../navigation/types';
 
 const TOTAL = 3;
@@ -45,7 +45,7 @@ export default function CreateBusinessScreen() {
     }
     setGenerating(true);
     try {
-      const result = await generateBusinessPlan(
+      const result = await generateBusinessDescription(
         incomingMaterials.length > 0 ? incomingMaterials : ['local materials'],
         category,
         name,
@@ -61,14 +61,14 @@ export default function CreateBusinessScreen() {
     }
   };
 
-  const validateStep1 = () => {
-    const next = {
+  const validateStep1 = (desc: string = description) => {
+    const fieldErrors = {
       name: validateRequired(name, 'a business name', 2),
       category: category ? undefined : 'Choose a category',
-      description: validateRequired(description, 'a short description', 10),
+      description: validateRequired(desc, 'a short description', 10),
     };
-    setErrors(next);
-    return !Object.values(next).some(Boolean);
+    setErrors(fieldErrors);
+    return !Object.values(fieldErrors).some(Boolean);
   };
 
   const pickImage = async () => {
@@ -85,8 +85,42 @@ export default function CreateBusinessScreen() {
     }
   };
 
-  const next = () => {
-    if (step === 1 && !validateStep1()) return;
+  const next = async () => {
+    if (step === 1) {
+      const base = {
+        name: validateRequired(name, 'a business name', 2),
+        category: category ? undefined : 'Choose a category',
+      };
+      if (Object.values(base).some(Boolean)) {
+        setErrors(base);
+        return;
+      }
+
+      // Next calls the AI immediately: if the owner has not written a description yet,
+      // generate one now so the business plan can be built as soon as they continue.
+      let desc = description;
+      if (!desc.trim()) {
+        setGenerating(true);
+        try {
+          desc = await generateBusinessDescription(
+            incomingMaterials.length > 0 ? incomingMaterials : ['local materials'],
+            category,
+            name,
+          );
+          setDescription(desc);
+        } catch (e: unknown) {
+          setGenerating(false);
+          Alert.alert(
+            'Could not generate your business plan',
+            e instanceof Error ? e.message : 'Please check your internet connection and try again.',
+          );
+          return;
+        }
+        setGenerating(false);
+      }
+
+      if (!validateStep1(desc)) return;
+    }
     setStep((s) => Math.min(TOTAL, s + 1));
   };
 
@@ -189,7 +223,7 @@ export default function CreateBusinessScreen() {
             <View style={styles.review}>
               {imageUri ? <SmartImage uri={imageUri} style={styles.reviewImg} /> : null}
               <AppText variant="heading">{name.trim()}</AppText>
-              <AppText variant="caption" color={colors.caramel} style={{ marginVertical: 4, fontFamily: 'Manrope_700Bold' }}>
+              <AppText variant="caption" color={colors.caramel} style={{ marginVertical: 4, fontFamily: 'Outfit_700Bold' }}>
                 {category}
               </AppText>
               <AppText variant="body" color={colors.muted}>
@@ -200,7 +234,12 @@ export default function CreateBusinessScreen() {
 
           <View style={styles.actions}>
             {step < TOTAL ? (
-              <Button title={step === 2 && !imageUri ? 'Skip for now' : 'Next'} iconRight="arrow-forward" onPress={next} />
+              <Button
+                title={step === 2 && !imageUri ? 'Skip for now' : 'Next'}
+                iconRight="arrow-forward"
+                loading={step === 1 && generating}
+                onPress={next}
+              />
             ) : (
               <Button title={editing ? 'Save changes' : 'Save business'} icon="checkmark" onPress={save} />
             )}
@@ -223,7 +262,7 @@ const styles = StyleSheet.create({
   descHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, marginHorizontal: 4 },
   aiBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: colors.caramel, backgroundColor: 'rgba(168,117,66,0.08)' },
   aiBtnDisabled: { borderColor: colors.border, backgroundColor: 'transparent' },
-  aiBtnText: { fontFamily: 'Manrope_600SemiBold' },
+  aiBtnText: { fontFamily: 'Outfit_600SemiBold' },
   picker: { height: 220, borderRadius: radius.lg, overflow: 'hidden', borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.caramel, backgroundColor: colors.white, marginBottom: 10 },
   pickerEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   review: { backgroundColor: colors.white, borderRadius: radius.lg, padding: 16 },

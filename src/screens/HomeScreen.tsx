@@ -366,8 +366,8 @@ const styles = StyleSheet.create({
   },
   brand: { flexDirection: 'row', alignItems: 'center' },
   logo: { width: 40, height: 40, borderRadius: 20, marginRight: 12 },
-  brandName: { fontFamily: 'Manrope_800ExtraBold', fontSize: 20, lineHeight: 24, color: INK },
-  greeting: { fontFamily: 'Manrope_500Medium', fontSize: 11, lineHeight: 13, color: colors.muted },
+  brandName: { fontFamily: 'Outfit_800ExtraBold', fontSize: 20, lineHeight: 24, color: INK },
+  greeting: { fontFamily: 'Outfit_500Medium', fontSize: 11, lineHeight: 13, color: colors.muted },
 
   // Hero: 216dp high, 24dp title, 12dp subtitle, 118x30 button
   hero: {
@@ -383,10 +383,10 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   heroText: { position: 'absolute', left: 20, right: 20, bottom: 15 },
-  heroTitle: { fontFamily: 'Manrope_800ExtraBold', fontSize: 24, lineHeight: 32, color: colors.white },
+  heroTitle: { fontFamily: 'Outfit_800ExtraBold', fontSize: 24, lineHeight: 32, color: colors.white },
   heroSub: {
     marginTop: 6,
-    fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Outfit_500Medium',
     fontSize: 12,
     lineHeight: 17,
     color: 'rgba(255,255,255,0.92)',
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     paddingVertical: 0,
-    fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Outfit_500Medium',
     fontSize: 13,
     color: INK,
     borderWidth: 0,
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     elevation: 2,
   },
-  shortcutLabel: { marginTop: 8, fontFamily: 'Manrope_700Bold', fontSize: 12, lineHeight: 16, color: INK },
+  shortcutLabel: { marginTop: 8, fontFamily: 'Outfit_700Bold', fontSize: 12, lineHeight: 16, color: INK },
 
   // Section titles: 17dp bold, "See all" 12dp
   section: {
@@ -454,8 +454,8 @@ const styles = StyleSheet.create({
     marginTop: 22,
     marginBottom: 10,
   },
-  sectionTitle: { fontFamily: 'Manrope_800ExtraBold', fontSize: 17, lineHeight: 22, color: INK },
-  seeAll: { fontFamily: 'Manrope_600SemiBold', fontSize: 12, lineHeight: 16, color: INK },
+  sectionTitle: { fontFamily: 'Outfit_800ExtraBold', fontSize: 17, lineHeight: 22, color: INK },
+  seeAll: { fontFamily: 'Outfit_600SemiBold', fontSize: 12, lineHeight: 16, color: INK },
 
   // Poster cards: 180x146, 12dp radius, 16dp gap
   hList: { paddingHorizontal: SIDE, gap: 16 },
@@ -467,8 +467,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.sandstone,
   },
   posterText: { position: 'absolute', left: 16, right: 12, bottom: 8 },
-  posterTitle: { fontFamily: 'Manrope_700Bold', fontSize: 13, lineHeight: 18, color: colors.white },
-  posterSub: { fontFamily: 'Manrope_600SemiBold', fontSize: 11, lineHeight: 15, color: 'rgba(255,255,255,0.9)' },
+  posterTitle: { fontFamily: 'Outfit_700Bold', fontSize: 13, lineHeight: 18, color: colors.white },
+  posterSub: { fontFamily: 'Outfit_600SemiBold', fontSize: 11, lineHeight: 15, color: 'rgba(255,255,255,0.9)' },
   pill: {
     alignSelf: 'flex-start',
     alignItems: 'center',
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(231,200,160,0.9)',
     backgroundColor: 'rgba(74,46,28,0.72)',
   },
-  pillText: { fontFamily: 'Manrope_700Bold', fontSize: 12, lineHeight: 16, color: colors.cream },
+  pillText: { fontFamily: 'Outfit_700Bold', fontSize: 12, lineHeight: 16, color: colors.cream },
 
   business: {
     flexDirection: 'row',
@@ -492,13 +492,13 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 14,
   },
-  businessTitle: { fontFamily: 'Manrope_700Bold', fontSize: 15, lineHeight: 20, color: colors.cream },
-  businessSub: { fontFamily: 'Manrope_500Medium', fontSize: 12, lineHeight: 16, color: 'rgba(247,240,229,0.8)' },
+  businessTitle: { fontFamily: 'Outfit_700Bold', fontSize: 15, lineHeight: 20, color: colors.cream },
+  businessSub: { fontFamily: 'Outfit_500Medium', fontSize: 12, lineHeight: 16, color: 'rgba(247,240,229,0.8)' },
 
   // Search results
   results: { paddingHorizontal: SIDE, marginTop: 18 },
-  noResults: { textAlign: 'center', marginTop: 24, fontFamily: 'Manrope_500Medium', fontSize: 14, color: colors.muted },
-  resultGroup: { marginTop: 8, marginBottom: 8, fontFamily: 'Manrope_800ExtraBold', fontSize: 14, color: INK },
+  noResults: { textAlign: 'center', marginTop: 24, fontFamily: 'Outfit_500Medium', fontSize: 14, color: colors.muted },
+  resultGroup: { marginTop: 8, marginBottom: 8, fontFamily: 'Outfit_800ExtraBold', fontSize: 14, color: INK },
   resultRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -508,6 +508,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.78)',
   },
   resultThumb: { width: 48, height: 48, borderRadius: 10 },
-  resultTitle: { fontFamily: 'Manrope_700Bold', fontSize: 14, lineHeight: 19, color: INK },
-  resultNote: { fontFamily: 'Manrope_500Medium', fontSize: 12, lineHeight: 16, color: colors.muted },
+  resultTitle: { fontFamily: 'Outfit_700Bold', fontSize: 14, lineHeight: 19, color: INK },
+  resultNote: { fontFamily: 'Outfit_500Medium', fontSize: 12, lineHeight: 16, color: colors.muted },
 });

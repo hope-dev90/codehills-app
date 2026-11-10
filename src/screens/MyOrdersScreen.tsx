@@ -34,7 +34,7 @@ export default function MyOrdersScreen() {
               <AppText variant="small" color={colors.muted}>
                 {formatDate(item.createdAt)} · {item.lines.reduce((n, l) => n + l.quantity, 0)} items
               </AppText>
-              <AppText variant="small" color={colors.caramel} style={{ fontFamily: 'Manrope_700Bold', marginTop: 2 }}>
+              <AppText variant="small" color={colors.caramel} style={{ fontFamily: 'Outfit_700Bold', marginTop: 2 }}>
                 {formatRwf(item.totalRwf)} · Demo order
               </AppText>
             </View>

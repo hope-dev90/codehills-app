@@ -162,8 +162,8 @@ const fieldStyles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.55)',
   },
   icon: { marginRight: 12 },
-  input: { flex: 1, fontFamily: 'Manrope_500Medium', fontSize: 14, color: INK, paddingVertical: 0 },
-  error: { marginTop: 3, marginLeft: 18, fontFamily: 'Manrope_500Medium', fontSize: 11, color: colors.danger },
+  input: { flex: 1, fontFamily: 'Outfit_500Medium', fontSize: 14, color: INK, paddingVertical: 0, borderWidth: 0, outlineStyle: 'none' as any },
+  error: { marginTop: 3, marginLeft: 18, fontFamily: 'Outfit_500Medium', fontSize: 11, color: colors.danger },
 });
 
 /** Screen 2: Login. */
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   brand: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
   wordmark: {
     marginTop: 6,
-    fontFamily: 'Manrope_800ExtraBold',
+    fontFamily: 'Outfit_800ExtraBold',
     fontSize: 34,
     lineHeight: 42,
     color: colors.chocolate,
@@ -394,12 +394,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.55)',
   },
   boxOn: { backgroundColor: colors.chocolate },
-  small: { fontFamily: 'Manrope_500Medium', fontSize: 14, lineHeight: 18, color: INK },
+  small: { fontFamily: 'Outfit_500Medium', fontSize: 14, lineHeight: 18, color: INK },
   // Login button: full width pill
   btn: { height: 50, minHeight: 50, paddingVertical: 0, borderRadius: 25 },
   or: { flexDirection: 'row', alignItems: 'center', marginTop: 16, marginBottom: 16 },
   line: { flex: 1, height: 1, backgroundColor: LINE },
-  orText: { marginHorizontal: 14, fontFamily: 'Manrope_500Medium', fontSize: 14, lineHeight: 18, color: INK },
+  orText: { marginHorizontal: 14, fontFamily: 'Outfit_500Medium', fontSize: 14, lineHeight: 18, color: INK },
   // Google button: outlined pill
   google: {
     flexDirection: 'row',
@@ -413,10 +413,10 @@ const styles = StyleSheet.create({
   },
   googleDisabled: { opacity: 0.5 },
   g: { marginRight: 12 },
-  googleText: { fontFamily: 'Manrope_600SemiBold', fontSize: 15, lineHeight: 20, color: INK },
+  googleText: { fontFamily: 'Outfit_600SemiBold', fontSize: 15, lineHeight: 20, color: INK },
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 18 },
-  footerText: { fontFamily: 'Manrope_500Medium', fontSize: 14, lineHeight: 20, color: INK },
-  footerBold: { fontFamily: 'Manrope_800ExtraBold' },
+  footerText: { fontFamily: 'Outfit_500Medium', fontSize: 14, lineHeight: 20, color: INK },
+  footerBold: { fontFamily: 'Outfit_800ExtraBold' },
   waveBottom: { marginBottom: -1 },
   strip: { overflow: 'hidden', backgroundColor: '#B8431F' },
 });

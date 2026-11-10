@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   gridH: { position: 'absolute', left: 0, right: 0, height: 1, backgroundColor: 'rgba(168,117,66,0.25)' },
   gridV: { position: 'absolute', top: 0, bottom: 0, width: 1, backgroundColor: 'rgba(168,117,66,0.25)' },
   marker: { position: 'absolute', alignItems: 'center', width: 96, marginLeft: -48, marginTop: -30 },
-  markerLabel: { fontFamily: 'Manrope_700Bold', textAlign: 'center' },
+  markerLabel: { fontFamily: 'Outfit_700Bold', textAlign: 'center' },
   note: { position: 'absolute', left: 10, bottom: 8 },
   toggle: {
     position: 'absolute',

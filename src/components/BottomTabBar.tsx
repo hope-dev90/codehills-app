@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   },
   item: { flex: 1, alignItems: 'center', gap: 2 },
   label: { fontSize: 11, lineHeight: 14 },
-  activeLabel: { fontFamily: 'Manrope_800ExtraBold' },
+  activeLabel: { fontFamily: 'Outfit_800ExtraBold' },
   dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.caramel },
   badge: {
     position: 'absolute',

@@ -52,5 +52,5 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   selected: { backgroundColor: colors.chocolate, borderColor: colors.chocolate },
-  text: { fontFamily: 'Manrope_700Bold' },
+  text: { fontFamily: 'Outfit_700Bold' },
 });

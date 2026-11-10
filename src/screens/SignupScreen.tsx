@@ -154,8 +154,8 @@ const fieldStyles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.72)',
   },
   icon: { marginRight: 12 },
-  input: { flex: 1, fontFamily: 'Manrope_500Medium', fontSize: 13, color: INK, paddingVertical: 0 },
-  error: { marginTop: 3, marginLeft: 4, fontFamily: 'Manrope_500Medium', fontSize: 11, color: colors.danger },
+  input: { flex: 1, fontFamily: 'Outfit_500Medium', fontSize: 13, color: INK, paddingVertical: 0, borderWidth: 0, outlineStyle: 'none' as any },
+  error: { marginTop: 3, marginLeft: 4, fontFamily: 'Outfit_500Medium', fontSize: 11, color: colors.danger },
 });
 
 /** Screen 3: sign up with validation. */
@@ -327,11 +327,11 @@ const styles = StyleSheet.create({
 
   // Title 21dp bold, subtitle 13dp on two lines
   header: { marginTop: 100, paddingHorizontal: 28 },
-  title: { fontFamily: 'Manrope_700Bold', fontSize: 21, lineHeight: 28, color: colors.white },
+  title: { fontFamily: 'Outfit_700Bold', fontSize: 21, lineHeight: 28, color: colors.white },
   sub: {
     marginTop: 2,
     maxWidth: 250,
-    fontFamily: 'Manrope_400Regular',
+    fontFamily: 'Outfit_400Regular',
     fontSize: 13,
     lineHeight: 20,
     color: 'rgba(255,255,255,0.92)',
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
 
   or: { flexDirection: 'row', alignItems: 'center', marginTop: 17, marginBottom: 20 },
   line: { flex: 1, height: 1, backgroundColor: 'rgba(74,46,28,0.25)' },
-  orText: { marginHorizontal: 14, fontFamily: 'Manrope_500Medium', fontSize: 11, lineHeight: 14, color: INK },
+  orText: { marginHorizontal: 14, fontFamily: 'Outfit_500Medium', fontSize: 11, lineHeight: 14, color: INK },
 
   // Google button: 44dp high, 10dp radius
   google: {
@@ -371,15 +371,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.72)',
   },
   g: { marginRight: 12 },
-  googleText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, lineHeight: 18, color: INK },
+  googleText: { fontFamily: 'Outfit_600SemiBold', fontSize: 13, lineHeight: 18, color: INK },
 
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 23 },
-  footerText: { fontFamily: 'Manrope_500Medium', fontSize: 12, lineHeight: 16, color: INK },
-  bold: { fontFamily: 'Manrope_800ExtraBold' },
+  footerText: { fontFamily: 'Outfit_500Medium', fontSize: 12, lineHeight: 16, color: INK },
+  bold: { fontFamily: 'Outfit_800ExtraBold' },
   demo: {
     textAlign: 'center',
     marginTop: 8,
-    fontFamily: 'Manrope_400Regular',
+    fontFamily: 'Outfit_400Regular',
     fontSize: 10,
     lineHeight: 14,
     color: colors.muted,

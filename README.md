@@ -65,7 +65,7 @@ src/
   data/         mock stories, products, destinations, events, business data, image registry
   hooks/        app state (context + persistence), data loading hooks, toast
   services/     config, API interfaces, mock/placeholder implementations, auth, orders, payments, storage
-  theme/        colours, Manrope typography, spacing, radii, shadow
+  theme/        colours, Outfit typography, spacing, radii, shadow
   types/        TypeScript interfaces
   utils/        formatting and validation
 assets/images/  bundled artwork (see below)
@@ -89,7 +89,7 @@ No endpoint URLs, keys or environment variables were invented; the HTTP services
 - **Map:** uses `react-native-maps`. In Expo Go on Android it should work, but a standalone Android build needs a Google Maps API key (add it under `android.config.googleMaps.apiKey` in `app.json`). If the native map fails, or you tap the toggle button on the map, a simple built-in fallback map is shown. Marker positions are approximate and no distances are displayed.
 - **Events** are samples with no real dates or venues.
 - **Language** preference is saved, but the UI is English only.
-- **Fonts:** Manrope is loaded through `@expo-google-fonts/manrope`.
+- **Fonts:** Outfit is loaded through `@expo-google-fonts/outfit`.
 - The bundle identifier (`com.example.codehills`) is a placeholder; change it before publishing.
 - I verified TypeScript (`tsc --noEmit`) and that the Android bundle builds with `expo export`. I could not run the app on a device or emulator in my environment, so please report any runtime issues you see.
 # codehills-app

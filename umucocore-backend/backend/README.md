@@ -3,7 +3,7 @@
 Express + Prisma + Supabase PostgreSQL. ES Modules.
 
 ## Status
-Done: app skeleton, env validation, security middleware (Helmet, CORS, rate limit), error/response format, JWT authenticate/authorize, Supabase + Google config, contact normalization and token hashing utilities.
+Done: app skeleton, env validation, security middleware (Helmet, rate limit), error/response format, JWT authenticate/authorize, Supabase + Google config, contact normalization and token hashing utilities.
 
 Pending (needs the 19-table schema): `prisma/schema.prisma`, migrations, seed, auth/users and all other modules.
 

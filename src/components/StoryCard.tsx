@@ -108,5 +108,5 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     backgroundColor: 'rgba(74,46,28,0.7)',
   },
-  readText: { marginRight: 6, fontFamily: 'Manrope_700Bold' },
+  readText: { marginRight: 6, fontFamily: 'Outfit_700Bold' },
 });

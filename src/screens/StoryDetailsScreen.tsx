@@ -182,17 +182,17 @@ const styles = StyleSheet.create({
   bookmark: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
 
   // Title 24dp bold, body 14dp / 21dp
-  title: { fontFamily: 'Manrope_800ExtraBold', fontSize: 24, lineHeight: 30, color: colors.white },
+  title: { fontFamily: 'Outfit_800ExtraBold', fontSize: 24, lineHeight: 30, color: colors.white },
   body: {
     marginTop: 14,
-    fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Outfit_500Medium',
     fontSize: 14,
     lineHeight: 21,
     color: 'rgba(255,255,255,0.95)',
   },
   demo: {
     marginTop: 8,
-    fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Outfit_500Medium',
     fontSize: 11,
     lineHeight: 15,
     color: 'rgba(255,255,255,0.65)',
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     borderColor: PILL_BORDER,
     backgroundColor: PILL_BG,
   },
-  tagText: { fontFamily: 'Manrope_600SemiBold', fontSize: 12, lineHeight: 16, color: colors.cream },
+  tagText: { fontFamily: 'Outfit_600SemiBold', fontSize: 12, lineHeight: 16, color: colors.cream },
 
   // Gallery: three images, 92dp high
   gallery: { flexDirection: 'row', gap: 10, marginTop: 18 },
@@ -227,5 +227,5 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(231,200,160,0.85)',
     backgroundColor: 'rgba(110,70,44,0.8)',
   },
-  nextText: { fontFamily: 'Manrope_700Bold', fontSize: 15, lineHeight: 20, color: colors.cream },
+  nextText: { fontFamily: 'Outfit_700Bold', fontSize: 15, lineHeight: 20, color: colors.cream },
 });

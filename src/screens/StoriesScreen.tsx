@@ -232,11 +232,11 @@ const styles = StyleSheet.create({
 
   // Title 26dp bold, subtitle 14dp
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SIDE },
-  title: { fontFamily: 'Manrope_800ExtraBold', fontSize: 26, lineHeight: 34, color: INK },
+  title: { fontFamily: 'Outfit_800ExtraBold', fontSize: 26, lineHeight: 34, color: INK },
   subtitle: {
     paddingHorizontal: SIDE,
     marginTop: 4,
-    fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Outfit_500Medium',
     fontSize: 14,
     lineHeight: 20,
     color: '#5E4E42',
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     paddingVertical: 0,
-    fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Outfit_500Medium',
     fontSize: 13,
     color: INK,
     borderWidth: 0,
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     elevation: 3,
   },
-  chipText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, lineHeight: 17, color: INK },
+  chipText: { fontFamily: 'Outfit_600SemiBold', fontSize: 13, lineHeight: 17, color: INK },
 
   // Cards
   list: { paddingHorizontal: SIDE, paddingBottom: 20, flexGrow: 1 },
@@ -314,19 +314,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cardText: { position: 'absolute', left: 20, right: 20, bottom: 20 },
-  titleBig: { fontFamily: 'Manrope_800ExtraBold', fontSize: 22, lineHeight: 28, color: colors.white },
+  titleBig: { fontFamily: 'Outfit_800ExtraBold', fontSize: 22, lineHeight: 28, color: colors.white },
   subBig: {
     marginTop: 10,
     maxWidth: 230,
-    fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Outfit_500Medium',
     fontSize: 13,
     lineHeight: 18,
     color: 'rgba(255,255,255,0.93)',
   },
-  titleSmall: { fontFamily: 'Manrope_800ExtraBold', fontSize: 20, lineHeight: 26, color: colors.white },
+  titleSmall: { fontFamily: 'Outfit_800ExtraBold', fontSize: 20, lineHeight: 26, color: colors.white },
   subSmall: {
     marginTop: 4,
-    fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Outfit_500Medium',
     fontSize: 13,
     lineHeight: 18,
     color: 'rgba(255,255,255,0.92)',
@@ -344,5 +344,5 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(231,200,160,0.75)',
     backgroundColor: 'rgba(110,70,44,0.72)',
   },
-  readText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, lineHeight: 17, color: colors.cream },
+  readText: { fontFamily: 'Outfit_600SemiBold', fontSize: 13, lineHeight: 17, color: colors.cream },
 });

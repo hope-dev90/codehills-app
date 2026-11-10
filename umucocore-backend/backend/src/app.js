@@ -1,8 +1,6 @@
 import express from 'express';
 import helmet from 'helmet';
-import cors from 'cors';
 import rateLimit from 'express-rate-limit';
-import { env } from './config/env.js';
 import routes from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
@@ -14,15 +12,27 @@ app.use(helmet({
   // opener. The default 'same-origin' COOP policy blocks that.
   crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
 }));
-app.use(
-  cors({
-    origin(origin, cb) {
-      if (!origin || env.corsOrigins.includes(origin)) return cb(null, true);
-      cb(new Error('Origin not allowed by CORS'));
-    },
-    credentials: true,
-  }),
-);
+
+// Minimal CORS: mirror the request origin so browser clients (the Expo web
+// build and the admin dashboard) can call this API cross-origin, and answer
+// preflight requests. Credentials are allowed, so the origin must be echoed
+// back rather than '*'.
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.vary('Origin');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      req.headers['access-control-request-headers'] ?? 'Content-Type,Authorization',
+    );
+  }
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
 app.use(express.json({ limit: '1mb' }));
 
 app.use(

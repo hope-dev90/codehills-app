@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   body: { flexDirection: 'row', alignItems: 'center', padding: 12 },
   text: { flex: 1, paddingRight: 52 },
-  price: { fontFamily: 'Manrope_700Bold', marginTop: 2 },
+  price: { fontFamily: 'Outfit_700Bold', marginTop: 2 },
   add: {
     position: 'absolute',
     right: 12,

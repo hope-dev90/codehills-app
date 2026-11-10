@@ -306,11 +306,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#D2691E',
   },
-  badgeText: { fontFamily: 'Manrope_700Bold', fontSize: 10, lineHeight: 12, color: '#FFFFFF' },
+  badgeText: { fontFamily: 'Outfit_700Bold', fontSize: 10, lineHeight: 12, color: '#FFFFFF' },
   subtitle: {
     marginTop: 8,
     marginLeft: 28,
-    fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Outfit_500Medium',
     fontSize: 13,
     lineHeight: 19,
     color: 'rgba(255,255,255,0.95)',
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     paddingVertical: 0,
-    fontFamily: 'Manrope_500Medium',
+    fontFamily: 'Outfit_500Medium',
     fontSize: 14,
     color: DARK,
     borderWidth: 0,
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EBDDC9',
   },
   chipOn: { backgroundColor: BROWN },
-  chipText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: DARK },
+  chipText: { fontFamily: 'Outfit_600SemiBold', fontSize: 13, color: DARK },
 
   // Grid
   grid: { flex: 1, paddingHorizontal: SIDE, paddingTop: 16, paddingBottom: 14, gap: GAP },
@@ -385,11 +385,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(59,36,22,0.6)',
   },
 
-  tags: { fontFamily: 'Manrope_500Medium', fontSize: 11, lineHeight: 16, color: MUTED, marginTop: 2 },
+  tags: { fontFamily: 'Outfit_500Medium', fontSize: 11, lineHeight: 16, color: MUTED, marginTop: 2 },
   priceRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6, marginBottom: 8 },
-  price: { fontFamily: 'Manrope_800ExtraBold', fontSize: 16, color: DARK },
+  price: { fontFamily: 'Outfit_800ExtraBold', fontSize: 16, color: DARK },
   rating: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  ratingText: { fontFamily: 'Manrope_500Medium', fontSize: 11, color: MUTED },
+  ratingText: { fontFamily: 'Outfit_500Medium', fontSize: 11, color: MUTED },
 
   addBtn: {
     height: 36,
@@ -400,5 +400,5 @@ const styles = StyleSheet.create({
     gap: 6,
     backgroundColor: BROWN,
   },
-  addText: { fontFamily: 'Manrope_700Bold', fontSize: 12, color: '#F7F0E5' },
+  addText: { fontFamily: 'Outfit_700Bold', fontSize: 12, color: '#F7F0E5' },
 });

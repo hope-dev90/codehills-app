@@ -5,5 +5,5 @@
     "allowJs": true,
     "checkJs": false
   },
-  "exclude": ["backend", "node_modules", "dist"]
+  "exclude": ["umucocore-backend", "admin-dashboard", "node_modules", "dist"]
 }

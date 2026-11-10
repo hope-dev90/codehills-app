@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   press: { flex: 1, flexDirection: 'row' },
   image: { width: 104, minHeight: 112 },
   body: { flex: 1, padding: 12, paddingRight: 40 },
-  cat: { marginBottom: 3, fontFamily: 'Manrope_700Bold' },
+  cat: { marginBottom: 3, fontFamily: 'Outfit_700Bold' },
   badge: { marginTop: 6 },
   save: { position: 'absolute', top: 10, right: 10 },
 });

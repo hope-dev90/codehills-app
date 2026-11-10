@@ -232,9 +232,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
   },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  title: { flex: 1, fontFamily: 'Manrope_800ExtraBold', fontSize: 20, lineHeight: 26, color: INK },
-  price: { marginTop: 4, fontFamily: 'Manrope_800ExtraBold', fontSize: 17, lineHeight: 23, color: INK },
-  desc: { marginTop: 6, fontFamily: 'Manrope_500Medium', fontSize: 13, lineHeight: 19, color: '#5E4E42' },
+  title: { flex: 1, fontFamily: 'Outfit_800ExtraBold', fontSize: 20, lineHeight: 26, color: INK },
+  price: { marginTop: 4, fontFamily: 'Outfit_800ExtraBold', fontSize: 17, lineHeight: 23, color: INK },
+  desc: { marginTop: 6, fontFamily: 'Outfit_500Medium', fontSize: 13, lineHeight: 19, color: '#5E4E42' },
 
   // Tags: 28dp pills, 10dp gap
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
@@ -248,12 +248,12 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(168,117,66,0.3)',
     backgroundColor: 'rgba(255,255,255,0.6)',
   },
-  tagText: { fontFamily: 'Manrope_600SemiBold', fontSize: 12, lineHeight: 16, color: INK },
+  tagText: { fontFamily: 'Outfit_600SemiBold', fontSize: 12, lineHeight: 16, color: INK },
 
   artisan: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 18 },
-  artisanText: { flex: 1, fontFamily: 'Manrope_500Medium', fontSize: 12, lineHeight: 17, color: '#5E4E42' },
-  heading: { marginTop: 16, fontFamily: 'Manrope_800ExtraBold', fontSize: 15, lineHeight: 20, color: INK },
-  demo: { marginTop: 14, fontFamily: 'Manrope_500Medium', fontSize: 11, lineHeight: 15, color: colors.muted },
+  artisanText: { flex: 1, fontFamily: 'Outfit_500Medium', fontSize: 12, lineHeight: 17, color: '#5E4E42' },
+  heading: { marginTop: 16, fontFamily: 'Outfit_800ExtraBold', fontSize: 15, lineHeight: 20, color: INK },
+  demo: { marginTop: 14, fontFamily: 'Outfit_500Medium', fontSize: 11, lineHeight: 15, color: colors.muted },
 
   // Bottom area
   barWrap: { position: 'absolute', left: 0, right: 0, bottom: 0 },
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.6)',
   },
   stepBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
-  qty: { minWidth: 30, textAlign: 'center', fontFamily: 'Manrope_700Bold', fontSize: 14, lineHeight: 18, color: INK },
+  qty: { minWidth: 30, textAlign: 'center', fontFamily: 'Outfit_700Bold', fontSize: 14, lineHeight: 18, color: INK },
 
   // Add to Cart: full-width 48dp pill
   addBtn: {
@@ -282,5 +282,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.chocolate,
   },
-  addText: { fontFamily: 'Manrope_700Bold', fontSize: 15, lineHeight: 20, color: colors.cream },
+  addText: { fontFamily: 'Outfit_700Bold', fontSize: 15, lineHeight: 20, color: colors.cream },
 });

@@ -1,12 +1,12 @@
-import React from 'react';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '../components/Screen';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { AppText } from '../components/AppText';
 import { Button } from '../components/Button';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { colors, radius, shadow } from '../theme';
-import { config } from '../services/config';
 import { useRootNav } from '../hooks/useRootNav';
 import { useApp } from '../hooks/AppContext';
 
@@ -19,6 +19,7 @@ export default function ProfileScreen() {
   const navigation = useRootNav();
   const { data, signOut } = useApp();
   const user = data.user;
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const rows: { icon: IconName; label: string; detail?: string; onPress: () => void }[] = [
     { icon: 'receipt-outline', label: 'My Orders', detail: String(data.orders.length), onPress: () => navigation.navigate('MyOrders') },
@@ -35,27 +36,10 @@ export default function ProfileScreen() {
     { icon: 'information-circle-outline', label: 'About CodeHills', onPress: () => navigation.navigate('About') },
   ];
 
-  const confirmSignOut = () => {
-    const title = user ? 'Sign out' : 'Exit';
-    const message = user
-      ? 'Your demo data stays on this device.'
-      : 'You will return to the landing screen.';
-
-    const doSignOut = async () => {
-      if (user) await signOut();
-      navigation.reset({ index: 0, routes: [{ name: 'Landing' }] });
-    };
-
-    // Alert.alert is a no-op on web — use window.confirm instead.
-    if (Platform.OS === 'web') {
-      if (window.confirm(`${title}\n\n${message}`)) doSignOut();
-      return;
-    }
-
-    Alert.alert(title, message, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: title, style: 'destructive', onPress: doSignOut },
-    ]);
+  const doSignOut = async () => {
+    setConfirmOpen(false);
+    if (user) await signOut();
+    navigation.reset({ index: 0, routes: [{ name: 'Landing' }] });
   };
 
   return (
@@ -114,14 +98,27 @@ export default function ProfileScreen() {
           title={user ? 'Sign out' : 'Exit to landing'}
           variant="secondary"
           icon="log-out-outline"
-          onPress={confirmSignOut}
+          onPress={() => setConfirmOpen(true)}
           style={{ marginTop: 18 }}
         />
 
-        <AppText variant="caption" color={colors.muted} style={styles.version}>
-          {config.appVersionLabel}
-        </AppText>
       </ScrollView>
+
+      <ConfirmDialog
+        visible={confirmOpen}
+        title={user ? 'Sign out?' : 'Exit to landing?'}
+        message={
+          user
+            ? 'You will need to sign in again to access your account.'
+            : 'You will return to the landing screen.'
+        }
+        confirmText={user ? 'Sign out' : 'Exit'}
+        cancelText="Cancel"
+        confirmVariant={user ? 'danger' : 'primary'}
+        icon="log-out-outline"
+        onConfirm={doSignOut}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </Screen>
   );
 }
@@ -134,5 +131,4 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 16 },
   rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
   detail: { marginRight: 8, maxWidth: 120 },
-  version: { textAlign: 'center', marginTop: 20 },
 });

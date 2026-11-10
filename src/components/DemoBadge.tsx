@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: radius.pill,
   },
-  text: { marginLeft: 4, fontFamily: 'Manrope_700Bold' },
+  text: { marginLeft: 4, fontFamily: 'Outfit_700Bold' },
   notice: {
     flexDirection: 'row',
     backgroundColor: colors.sandstone,
