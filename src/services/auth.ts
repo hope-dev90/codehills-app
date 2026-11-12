@@ -83,6 +83,11 @@ const httpAuthService: AuthService & {
     await tokenStorage.clearTokens();
   },
 
+  async deleteAccount() {
+    await api.delete('/users/me');
+    await tokenStorage.clearTokens();
+  },
+
   async refreshSession() {
     const refreshToken = await tokenStorage.getRefreshToken();
     if (!refreshToken) return null;
@@ -164,6 +169,12 @@ const localAuthService: AuthService = {
   },
 
   async signOut() { /* local sessions need no revocation */ },
+
+  async deleteAccount(contact) {
+    const key = normalise(contact);
+    const accounts = await loadAccounts();
+    await saveAccounts(accounts.filter((a) => a.contact !== key));
+  },
 };
 
 // ─── Export ──────────────────────────────────────────────────────────────────

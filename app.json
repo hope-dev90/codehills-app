@@ -20,18 +20,29 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "CodeHills uses your photos so you can add an image to your business."
+          "photosPermission": "CodeHills uses your photos so you can add an image to your business.",
+          "microphonePermission": false,
+          "cameraPermission": false
         }
       ],
       "expo-web-browser",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "extraProguardRules": "-keep class * extends androidx.room.RoomDatabase { <init>(); }\n-keep class androidx.work.impl.WorkDatabase_Impl { *; }"
+          }
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.example.codehills"
     },
     "android": {
-      "package": "com.example.codehills",
+      "package": "com.codehills.app",
       "adaptiveIcon": {
         "backgroundColor": "#4A2E1C",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -39,8 +50,11 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "permissions": [
-        "android.permission.RECORD_AUDIO"
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
       ]
     },
     "web": {

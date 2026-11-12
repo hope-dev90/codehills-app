@@ -18,6 +18,7 @@ const schema = z.object({
   GEMINI_API_KEY: z.string().optional(),
   GEMINI_MODEL: z.string().default('gemini-1.5-flash'),
   PAYMENT_WEBHOOK_SECRET: z.string().optional(),
+  SUPPORT_EMAIL: z.string().email().optional(),
 });
 
 const parsed = schema.safeParse(process.env);

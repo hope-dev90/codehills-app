@@ -2,6 +2,7 @@ import express from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import routes from './routes/index.js';
+import legalRoutes from './routes/legal.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -47,6 +48,7 @@ app.use(
 );
 
 app.use('/api', routes);
+app.use(legalRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 

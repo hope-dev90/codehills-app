@@ -9,6 +9,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { colors, radius, shadow } from '../theme';
 import { useRootNav } from '../hooks/useRootNav';
 import { useApp } from '../hooks/AppContext';
+import { useToast } from '../hooks/ToastContext';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -17,9 +18,11 @@ const LANGUAGE_NAMES = { en: 'English', rw: 'Kinyarwanda', fr: 'Français' } as 
 /** Screen 17: user details and links to orders, stories, business, places, settings. */
 export default function ProfileScreen() {
   const navigation = useRootNav();
-  const { data, signOut } = useApp();
+  const { data, signOut, deleteAccount } = useApp();
+  const toast = useToast();
   const user = data.user;
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const rows: { icon: IconName; label: string; detail?: string; onPress: () => void }[] = [
     { icon: 'receipt-outline', label: 'My Orders', detail: String(data.orders.length), onPress: () => navigation.navigate('MyOrders') },
@@ -42,6 +45,17 @@ export default function ProfileScreen() {
     navigation.reset({ index: 0, routes: [{ name: 'Landing' }] });
   };
 
+  const doDeleteAccount = async () => {
+    setDeleteOpen(false);
+    try {
+      await deleteAccount();
+      toast('Your account has been deleted');
+      navigation.reset({ index: 0, routes: [{ name: 'Landing' }] });
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Could not delete your account. Please try again.');
+    }
+  };
+
   return (
     <Screen>
       <ScreenHeader title="Profile" showBack />
@@ -57,7 +71,7 @@ export default function ProfileScreen() {
             <AppText variant="small" color={colors.muted} numberOfLines={1}>
               {user ? user.contact : 'You are browsing without an account'}
             </AppText>
-            {user && (
+            {user?.isDemo && (
               <AppText variant="caption" color={colors.caramel} style={{ marginTop: 2 }}>
                 Demo account
               </AppText>
@@ -102,6 +116,15 @@ export default function ProfileScreen() {
           style={{ marginTop: 18 }}
         />
 
+        {user && (
+          <Button
+            title="Delete account"
+            variant="ghost"
+            icon="trash-outline"
+            onPress={() => setDeleteOpen(true)}
+            style={{ marginTop: 8 }}
+          />
+        )}
       </ScrollView>
 
       <ConfirmDialog
@@ -118,6 +141,18 @@ export default function ProfileScreen() {
         icon="log-out-outline"
         onConfirm={doSignOut}
         onCancel={() => setConfirmOpen(false)}
+      />
+
+      <ConfirmDialog
+        visible={deleteOpen}
+        title="Delete account?"
+        message="This permanently deletes your account, orders, saved items and business. This cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmVariant="danger"
+        icon="trash-outline"
+        onConfirm={doDeleteAccount}
+        onCancel={() => setDeleteOpen(false)}
       />
     </Screen>
   );
