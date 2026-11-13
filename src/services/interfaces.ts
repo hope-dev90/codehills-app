@@ -23,6 +23,8 @@ export interface AuthService {
   signIn(contact: string, password: string): Promise<UserProfile>;
   signUp(fullName: string, contact: string, password: string): Promise<UserProfile>;
   signOut(): Promise<void>;
+  /** Permanently deletes the signed-in account and its data. */
+  deleteAccount(contact: string): Promise<void>;
 }
 
 export interface CreateOrderInput {

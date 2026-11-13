@@ -336,3 +336,26 @@ describe('PUT /api/auth/change-password', () => {
     assert.equal(res.status, 422);
   });
 });
+
+describe('DELETE /api/users/me', () => {
+  beforeEach(() => resetMocks());
+
+  it('401 — without token', async () => {
+    const res = await request(app).delete('/api/users/me');
+    assert.equal(res.status, 401);
+  });
+
+  it('200 — deletes orders, then the user', async () => {
+    mockPrisma.user.findUnique.mock.mockImplementation(async () => BASE_USER);
+    const res = await request(app).delete('/api/users/me').set('Authorization', bearerToken());
+    assert.equal(res.status, 200);
+    assert.equal(mockPrisma.order.deleteMany.mock.calls[0].arguments[0].where.userId, 'user-1');
+    assert.equal(mockPrisma.user.delete.mock.calls[0].arguments[0].where.id, 'user-1');
+  });
+
+  it('404 — user already gone', async () => {
+    const res = await request(app).delete('/api/users/me').set('Authorization', bearerToken());
+    assert.equal(res.status, 404);
+    assert.equal(mockPrisma.user.delete.mock.calls.length, 0);
+  });
+});

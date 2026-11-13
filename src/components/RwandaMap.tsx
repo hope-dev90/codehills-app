@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { AppText } from './AppText';
 import { colors, radius } from '../theme';
 import type { Destination } from '../types';
@@ -75,7 +76,10 @@ class MapBoundary extends React.Component<
 
 type MapsModule = typeof import('react-native-maps');
 let Maps: MapsModule | null = null;
-if (Platform.OS !== 'web') {
+// The native Google map crashes the whole app (not just this component) when the
+// build has no Maps API key, so only load it when app.config.js says one was set.
+const googleMapsEnabled = Constants.expoConfig?.extra?.googleMapsEnabled === true;
+if (Platform.OS !== 'web' && googleMapsEnabled) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     Maps = require('react-native-maps') as MapsModule;

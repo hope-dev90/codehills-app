@@ -21,3 +21,21 @@ export const updateProfile = asyncHandler(async (req, res) => {
   });
   ok(res, sanitizeUser(user), 'Profile updated');
 });
+
+/**
+ * Permanently deletes the signed-in user. Orders are removed explicitly because
+ * they hold delivery details and are not cascaded from the user; everything
+ * else (tokens, collections, cart, business) cascades in the schema.
+ */
+export const deleteAccount = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw notFound('User not found');
+
+  await prisma.$transaction(async (tx) => {
+    await tx.userUnlockedStory.deleteMany({ where: { userId } });
+    await tx.order.deleteMany({ where: { userId } });
+    await tx.user.delete({ where: { id: userId } });
+  });
+  ok(res, {}, 'Account deleted');
+});

@@ -49,6 +49,8 @@ interface AppContextValue {
   /** Called after a successful Google OAuth flow with the resolved profile. */
   signInWithGoogle: (user: UserProfile) => Promise<void>;
   signOut: () => Promise<void>;
+  /** Deletes the account on the server (or device) and wipes all local data. */
+  deleteAccount: () => Promise<void>;
   toggleFavorite: (productId: string) => void;
   toggleBookmark: (storyId: string) => void;
   toggleSavedPlace: (destinationId: string) => void;
@@ -212,6 +214,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       rememberedContact: p.rememberedContact,
     }));
   }, [update]);
+
+  const deleteAccount = useCallback(async () => {
+    if (!data.user) return;
+    await authService.deleteAccount(data.user.contact);
+    update(() => defaultAppData);
+  }, [data.user, update]);
 
   // ── Language ─────────────────────────────────────────────────────────────────
 
@@ -411,7 +419,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<AppContextValue>(
     () => ({
       ready, data, cartCount, cartSubtotal,
-      signIn, signUp, signInWithGoogle, signOut,
+      signIn, signUp, signInWithGoogle, signOut, deleteAccount,
       toggleFavorite, toggleBookmark, toggleSavedPlace,
       addToCart, setCartQuantity, removeFromCart,
       placeDemoOrder, setLanguage,
@@ -420,7 +428,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       ready, data, cartCount, cartSubtotal,
-      signIn, signUp, signInWithGoogle, signOut,
+      signIn, signUp, signInWithGoogle, signOut, deleteAccount,
       toggleFavorite, toggleBookmark, toggleSavedPlace,
       addToCart, setCartQuantity, removeFromCart,
       placeDemoOrder, setLanguage,

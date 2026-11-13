@@ -8,5 +8,6 @@ const router = Router();
 
 router.get('/',   authenticate, ctrl.getProfile);
 router.patch('/', authenticate, validate(updateProfileSchema), ctrl.updateProfile);
+router.delete('/', authenticate, ctrl.deleteAccount);
 
 export default router;
