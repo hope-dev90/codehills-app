@@ -41,3 +41,10 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# local release bundles
+build-output/
+
+# EAS signing credentials (never commit)
+credentials.json
+credentials/
